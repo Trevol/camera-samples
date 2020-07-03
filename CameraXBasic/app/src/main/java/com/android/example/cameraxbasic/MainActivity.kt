@@ -25,6 +25,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import android.content.Intent
 import android.widget.FrameLayout
 import com.android.example.cameraxbasic.utils.FLAGS_FULLSCREEN
+import org.opencv.android.OpenCVLoader
 
 const val KEY_EVENT_ACTION = "key_event_action"
 const val KEY_EVENT_EXTRA = "key_event_extra"
@@ -65,7 +66,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-
+        init{
+            OpenCVLoader.initDebug()
+        }
         /** Use external media if it is available, our app's file directory otherwise */
         fun getOutputDirectory(context: Context): File {
             val appContext = context.applicationContext
