@@ -7,31 +7,56 @@ import android.media.Image
 import org.opencv.android.Utils
 import org.opencv.core.CvType
 import org.opencv.core.Mat
+import org.opencv.core.MatOfByte
+import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
+import java.io.File
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 import java.lang.Exception
+import java.nio.ByteBuffer
 
-fun Image.jpegToBitmap(): Bitmap? {
+fun Image.jpegToBitmap(): Bitmap {
     (format == ImageFormat.JPEG).assert("format == ImageFormat.JPEG")
     (planes.size == 1).assert("planes.size == 1")
+    (planes[0].buffer != null).assert(planes[0].buffer != null)
 
-    val bmp = this.planes[0].buffer?.let {
-        val size = it.remaining()
-        val bytes = ByteArray(size)
-        it.get(bytes)
-        BitmapFactory.decodeByteArray(bytes, 0, size)
-    }
+    val bmp = planes[0].buffer
+            .toArray().let { BitmapFactory.decodeByteArray(it, 0, it.size) }
     return bmp
 }
 
-fun Bitmap?.toRgbMat(): Mat? {
-    return this?.let {
-        val mat = Mat()
-        Utils.bitmapToMat(this, mat)
-        (mat.type() == CvType.CV_8UC4).assert()
-//        val rgb = Mat()
-        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB)
-        mat
-    }
+fun Image.jpegSaveBuffer(toFile: File) {
+    (format == ImageFormat.JPEG).assert("format == ImageFormat.JPEG")
+    (planes.size == 1).assert("planes.size == 1")
+    (planes[0].buffer != null).assert(planes[0].buffer != null)
+
+    planes[0].buffer.toArray().writeTo(toFile)
+}
+
+fun Image.jpegToRgbMat(): Mat {
+    (format == ImageFormat.JPEG).assert("format == ImageFormat.JPEG")
+    (planes.size == 1).assert("planes.size == 1")
+    (planes[0].buffer != null).assert(planes[0].buffer != null)
+
+    return planes[0].buffer.toArray()
+            .let { MatOfByte().apply { this.fromArray(*it) } }
+            .let { Imgcodecs.imdecode(it, Imgcodecs.IMREAD_UNCHANGED) }
+            .apply { Imgproc.cvtColor(this, this, Imgproc.COLOR_BGR2RGB) }
+}
+
+private fun ByteBuffer.toArray(): ByteArray {
+    val bytes = ByteArray(this.remaining())
+    this.get(bytes)
+    return bytes
+}
+
+fun Bitmap.toRgbMat(): Mat {
+    val mat = Mat()
+    Utils.bitmapToMat(this, mat)
+    (mat.type() == CvType.CV_8UC4).assert()
+    Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB)
+    return mat
 }
 
 
