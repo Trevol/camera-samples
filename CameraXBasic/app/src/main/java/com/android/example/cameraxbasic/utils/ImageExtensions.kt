@@ -41,8 +41,11 @@ fun Image.jpegToRgbMat(): Mat {
 
     return planes[0].buffer.toArray()
             .let { Imgcodecs.imdecode(MatOfByte(*it), Imgcodecs.IMREAD_UNCHANGED) }
-            .apply { Imgproc.cvtColor(this, this, Imgproc.COLOR_BGR2RGB) }
+            .bgr2rgbInplace()
 }
+
+fun Mat.bgr2rgbInplace() = this.also { Imgproc.cvtColor(this, it, Imgproc.COLOR_BGR2RGB) }
+fun Mat.rgb2bgr() = Mat().also { Imgproc.cvtColor(this, it, Imgproc.COLOR_RGB2BGR) }
 
 private fun ByteBuffer.toArray(): ByteArray {
     val bytes = ByteArray(this.remaining())

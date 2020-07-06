@@ -2,6 +2,7 @@ package com.android.example.cameraxbasic.detection
 
 import android.media.Image
 import com.android.example.cameraxbasic.utils.jpegToRgbMat
+import com.android.example.cameraxbasic.utils.rgb2bgr
 import org.opencv.core.*
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
@@ -50,7 +51,6 @@ class CounterDetectionManager(
 
         fun Scalar(v0: Int, v1: Int, v2: Int) = Scalar(v0.toDouble(), v1.toDouble(), v2.toDouble())
         fun Rect2d.toRect() = Rect(x.toInt(), y.toInt(), width.toInt(), height.toInt())
-        fun Mat.rgb2bgr() = Mat().also { Imgproc.cvtColor(this, it, Imgproc.COLOR_RGB2BGR) }
 
         private fun createTimestamp() = SimpleDateFormat(TIMESTAMP_FORMAT, Locale.US).format(System.currentTimeMillis())
     }
