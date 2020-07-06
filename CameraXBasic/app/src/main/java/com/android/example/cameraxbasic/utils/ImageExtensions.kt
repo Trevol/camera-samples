@@ -40,8 +40,7 @@ fun Image.jpegToRgbMat(): Mat {
     (planes[0].buffer != null).assert(planes[0].buffer != null)
 
     return planes[0].buffer.toArray()
-            .let { MatOfByte().apply { this.fromArray(*it) } }
-            .let { Imgcodecs.imdecode(it, Imgcodecs.IMREAD_UNCHANGED) }
+            .let { Imgcodecs.imdecode(MatOfByte(*it), Imgcodecs.IMREAD_UNCHANGED) }
             .apply { Imgproc.cvtColor(this, this, Imgproc.COLOR_BGR2RGB) }
 }
 
