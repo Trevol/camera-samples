@@ -1,10 +1,5 @@
 package com.android.example.cameraxbasic.detection
 
-import android.graphics.Bitmap
-import android.media.Image
-import android.util.Log
-import com.android.example.cameraxbasic.utils.jpegToBitmap
-import com.android.example.cameraxbasic.utils.toRgbMat
 import org.opencv.core.*
 import org.opencv.dnn.Dnn
 import org.opencv.dnn.Net
@@ -30,10 +25,6 @@ class DarknetDetector(
 
         return postprocess(img, outputBlobs, confThreshold, nmsThreshold)
     }
-
-    fun detect(img: Bitmap): Collection<ObjectDetectionResult> = detect(img.toRgbMat())
-
-    fun detect(img: Image): Collection<ObjectDetectionResult> = detect(img.jpegToBitmap())
 
     fun postprocess(
             frame: Mat,

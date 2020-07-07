@@ -387,9 +387,7 @@ class CameraFragment : Fragment() {
                     }
 
                     override fun onCaptureSuccess(imageProxy: ImageProxy) {
-                        imageProxy.use {
-                            it.image?.also { image -> ManagerInstance.manager?.process(image) }
-                        }
+                        imageProxy.use { ManagerInstance.manager?.process(it) }
                     }
                 })
 

@@ -1,6 +1,7 @@
 package com.android.example.cameraxbasic.detection
 
 import android.media.Image
+import androidx.camera.core.ImageProxy
 import com.android.example.cameraxbasic.utils.jpegToRgbMat
 import com.android.example.cameraxbasic.utils.rgb2bgr
 import org.opencv.core.*
@@ -14,7 +15,7 @@ class CounterDetectionManager(
         val detector: DarknetDetector,
         val storageDirectory: File
 ) {
-    fun process(image: Image) {
+    fun process(image: ImageProxy) {
         val rgbMat = image.jpegToRgbMat()
         val detections = detector.detect(rgbMat)
         val visImg: Mat = visualize(detections, rgbMat)
