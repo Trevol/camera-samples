@@ -235,9 +235,6 @@ class CameraFragment : Fragment() {
 
         // Redraw the camera UI controls
         updateCameraUi()
-
-        // Enable or disable switching between cameras
-        updateCameraSwitchButton()
     }
 
     /** Initialize CameraX, and prepare to bind the camera use cases  */
@@ -251,12 +248,8 @@ class CameraFragment : Fragment() {
             // Select lensFacing depending on the available cameras
             lensFacing = when {
                 hasBackCamera() -> CameraSelector.LENS_FACING_BACK
-                hasFrontCamera() -> CameraSelector.LENS_FACING_FRONT
                 else -> throw IllegalStateException("Back and front camera are unavailable")
             }
-
-            // Enable or disable switching between cameras
-            updateCameraSwitchButton()
 
             // Build and bind the camera use cases
             bindCameraUseCases()
@@ -301,25 +294,6 @@ class CameraFragment : Fragment() {
                 .setTargetRotation(rotation)
                 .build()
 
-        // ImageAnalysis
-        /*imageAnalyzer = ImageAnalysis.Builder()
-                // We request aspect ratio but no resolution
-                .setTargetAspectRatio(screenAspectRatio)
-                // Set initial target rotation, we will have to call this again if rotation changes
-                // during the lifecycle of this use case
-                .setTargetRotation(rotation)
-                .build()
-                // The analyzer can then be assigned to the instance
-                .also {
-                    it.setAnalyzer(cameraExecutor, LuminosityAnalyzer { luma ->
-                        // Values returned from our analyzer are passed to the attached listener
-                        // We log image analysis results here - you should do something useful
-                        // instead!
-                        Log.d(TAG, "Average luminosity: $luma")
-                    })
-                }
-
-         */
 
         // Must unbind the use-cases before rebinding them
         cameraProvider.unbindAll()
@@ -402,24 +376,6 @@ class CameraFragment : Fragment() {
             }
         }
 
-        // Setup for button used to switch cameras
-        controls.findViewById<ImageButton>(R.id.camera_switch_button).let {
-
-            // Disable the button until the camera is set up
-            it.isEnabled = false
-
-            // Listener for button used to switch cameras. Only called if the button is enabled
-            it.setOnClickListener {
-                lensFacing = if (CameraSelector.LENS_FACING_FRONT == lensFacing) {
-                    CameraSelector.LENS_FACING_BACK
-                } else {
-                    CameraSelector.LENS_FACING_FRONT
-                }
-                // Re-bind use cases to update selected camera
-                bindCameraUseCases()
-            }
-        }
-
         // Listener for button used to view the most recent photo
         controls.findViewById<ImageButton>(R.id.photo_view_button).setOnClickListener {
             // Only navigate when the gallery has photos
@@ -432,37 +388,14 @@ class CameraFragment : Fragment() {
         }
     }
 
-    /** Enabled or disabled a button to switch cameras depending on the available cameras */
-    private fun updateCameraSwitchButton() {
-        val switchCamerasButton = container.findViewById<ImageButton>(R.id.camera_switch_button)
-        try {
-            switchCamerasButton.isEnabled = hasBackCamera() && hasFrontCamera()
-        } catch (exception: CameraInfoUnavailableException) {
-            switchCamerasButton.isEnabled = false
-        }
-    }
-
     /** Returns true if the device has an available back camera. False otherwise */
     private fun hasBackCamera(): Boolean {
         return cameraProvider?.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA) ?: false
     }
 
-    /** Returns true if the device has an available front camera. False otherwise */
-    private fun hasFrontCamera(): Boolean {
-        return cameraProvider?.hasCamera(CameraSelector.DEFAULT_FRONT_CAMERA) ?: false
-    }
-
-
     companion object {
         private const val TAG = "CameraXBasic"
-        private const val FILENAME = "yyyy-MM-dd-HH-mm-ss-SSS"
-        private const val PHOTO_EXTENSION = ".jpg"
         private const val RATIO_4_3_VALUE = 4.0 / 3.0
         private const val RATIO_16_9_VALUE = 16.0 / 9.0
-
-        /** Helper function used to create a timestamped file */
-        private fun createFile(baseFolder: File, format: String, extension: String) =
-                File(baseFolder, SimpleDateFormat(format, Locale.US)
-                        .format(System.currentTimeMillis()) + extension)
     }
 }
