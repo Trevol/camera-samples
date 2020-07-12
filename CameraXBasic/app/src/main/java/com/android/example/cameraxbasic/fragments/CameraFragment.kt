@@ -22,7 +22,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.hardware.display.DisplayManager
@@ -31,10 +30,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
-import android.view.KeyEvent
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.ImageButton
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -58,10 +54,10 @@ import com.bumptech.glide.request.RequestOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
-import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -204,21 +200,7 @@ class CameraFragment : Fragment() {
             // Set up the camera and its use cases
             setUpCamera()
         }
-    }
 
-    private object ManagerInstance {
-        var manager: CounterDetectionManager? = null
-
-        fun init(context: Context) {
-            if (manager != null) {
-                return
-            }
-            val cfgFile = Asset.getFilePath(context, "yolov3-tiny-2cls.cfg")
-            val darknetModel = Asset.getFilePath(context, "best.weights")
-            val detector = DarknetDetector(cfgFile, darknetModel, 416)
-
-            manager = CounterDetectionManager(detector, Asset.downloads("ElectroCounters"))
-        }
     }
 
 
@@ -301,15 +283,17 @@ class CameraFragment : Fragment() {
         try {
             // A variable number of use-cases can be passed here -
             // camera provides access to CameraControl & CameraInfo
-//            camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture, imageAnalyzer)
             camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture)
 
             // Attach the viewfinder's surface provider to preview use case
             preview?.setSurfaceProvider(viewFinder.createSurfaceProvider())
+
+            viewFinder.afterMeasured { setupAutoFocus(viewFinder, camera!!) }
         } catch (exc: Exception) {
             Log.e(TAG, "Use case binding failed", exc)
         }
     }
+
 
     /**
      *  [androidx.camera.core.ImageAnalysisConfig] requires enum value of
@@ -380,10 +364,10 @@ class CameraFragment : Fragment() {
         controls.findViewById<ImageButton>(R.id.photo_view_button).setOnClickListener {
             // Only navigate when the gallery has photos
             if (true == outputDirectory.listFiles()?.isNotEmpty()) {
-                Navigation.findNavController(
-                        requireActivity(), R.id.fragment_container
-                ).navigate(CameraFragmentDirections
-                        .actionCameraToGallery(outputDirectory.absolutePath))
+                Navigation.findNavController(requireActivity(), R.id.fragment_container)
+                        .navigate(
+                                CameraFragmentDirections.actionCameraToGallery(outputDirectory.absolutePath)
+                        )
             }
         }
     }
@@ -393,9 +377,53 @@ class CameraFragment : Fragment() {
         return cameraProvider?.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA) ?: false
     }
 
-    companion object {
-        private const val TAG = "CameraXBasic"
+    private companion object {
+        private const val TAG = "CameraXBasic_LOG"
         private const val RATIO_4_3_VALUE = 4.0 / 3.0
         private const val RATIO_16_9_VALUE = 16.0 / 9.0
+        private const val yoloCfg = "yolov3-tiny-2cls.cfg"
+        private const val yoloVal = "best.weights"
+        private const val resultsDir = "ElectroCounters"
+
+        private object ManagerInstance {
+            var manager: CounterDetectionManager? = null
+
+            fun init(context: Context) {
+                if (manager != null) {
+                    return
+                }
+                val cfgFile = Asset.getFilePath(context, yoloCfg)
+                val darknetModel = Asset.getFilePath(context, yoloVal)
+                val detector = DarknetDetector(cfgFile, darknetModel, 416)
+
+                manager = CounterDetectionManager(detector, Asset.downloads(resultsDir))
+            }
+        }
+
+        inline fun View.afterMeasured(crossinline block: () -> Unit) {
+            viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    if (measuredWidth > 0 && measuredHeight > 0) {
+                        viewTreeObserver.removeOnGlobalLayoutListener(this)
+                        block()
+                    }
+                }
+            })
+        }
+
+        fun setupAutoFocus(viewFinder: View, camera: Camera) {
+            val width = viewFinder.width.toFloat()
+            val height = viewFinder.height.toFloat()
+
+            val factory = SurfaceOrientedMeteringPointFactory(width, height)
+            val cx = width / 2
+            val cy = height / 2
+            val afPoint = factory.createPoint(cx, cy)
+
+            val focusMeteringAction = FocusMeteringAction.Builder(afPoint, FocusMeteringAction.FLAG_AF)
+                    .setAutoCancelDuration(1, TimeUnit.SECONDS)
+                    .build()
+            camera.cameraControl.startFocusAndMetering(focusMeteringAction)
+        }
     }
 }
