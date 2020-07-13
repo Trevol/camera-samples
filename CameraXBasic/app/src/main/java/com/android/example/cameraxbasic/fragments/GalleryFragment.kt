@@ -34,6 +34,7 @@ import androidx.core.content.FileProvider
 import com.android.example.cameraxbasic.BuildConfig
 import com.android.example.cameraxbasic.utils.padWithDisplayCutout
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
@@ -83,8 +84,10 @@ class GalleryFragment internal constructor() : Fragment() {
 
         //Checking media files list
         if (mediaList.isEmpty()) {
-            view.findViewById<ImageButton>(R.id.delete_button).isEnabled = false
-            view.findViewById<ImageButton>(R.id.share_button).isEnabled = false
+            view.findViewById<ImageButton>(R.id.share_button).apply {
+                isVisible = false
+                isEnabled = false
+            }
         }
 
         // Populate the ViewPager and implement a cache of two media items
@@ -126,40 +129,6 @@ class GalleryFragment internal constructor() : Fragment() {
 
                 // Launch the intent letting the user choose which app to share with
                 startActivity(Intent.createChooser(intent, getString(R.string.share_hint)))
-            }
-        }
-
-        // Handle delete button press
-        view.findViewById<ImageButton>(R.id.delete_button).setOnClickListener {
-
-            mediaList.getOrNull(mediaViewPager.currentItem)?.let { mediaFile ->
-
-                AlertDialog.Builder(view.context, android.R.style.Theme_Material_Dialog)
-                        .setTitle(getString(R.string.delete_title))
-                        .setMessage(getString(R.string.delete_dialog))
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .setPositiveButton(android.R.string.yes) { _, _ ->
-
-                            // Delete current photo
-                            mediaFile.delete()
-
-                            // Send relevant broadcast to notify other apps of deletion
-                            MediaScannerConnection.scanFile(
-                                    view.context, arrayOf(mediaFile.absolutePath), null, null)
-
-                            // Notify our view pager
-                            mediaList.removeAt(mediaViewPager.currentItem)
-                            mediaViewPager.adapter?.notifyDataSetChanged()
-
-                            // If all photos have been deleted, return to camera
-                            if (mediaList.isEmpty()) {
-                                Navigation.findNavController(requireActivity(), R.id.fragment_container).navigateUp()
-                            }
-
-                        }
-
-                        .setNegativeButton(android.R.string.no, null)
-                        .create().showImmersive()
             }
         }
     }
