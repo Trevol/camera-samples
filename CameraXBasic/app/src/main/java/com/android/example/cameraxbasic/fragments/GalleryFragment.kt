@@ -64,14 +64,12 @@ class GalleryFragment internal constructor() : Fragment() {
         // Mark this as a retain fragment, so the lifecycle does not get restarted on config change
         retainInstance = true
 
-        // Get root directory of media from navigation arguments
-        val rootDirectory = File(args.rootDirectory)
+        val storage = CameraFragment.ManagerInstance.manager!!.storage
+
 
         // Walk through all files in the root directory
         // We reverse the order of the list to present the last photos first
-        mediaList = rootDirectory.listFiles { file ->
-            EXTENSION_WHITELIST.contains(file.extension.toUpperCase(Locale.ROOT))
-        }?.sortedDescending()?.toMutableList() ?: mutableListOf()
+        mediaList = storage.items.map { it.detectionsImg }.toMutableList()
     }
 
     override fun onCreateView(

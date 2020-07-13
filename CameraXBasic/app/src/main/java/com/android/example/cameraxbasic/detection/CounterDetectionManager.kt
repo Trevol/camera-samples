@@ -1,5 +1,6 @@
 package com.android.example.cameraxbasic.detection
 
+import android.os.Build
 import androidx.camera.core.ImageProxy
 import com.android.example.cameraxbasic.utils.jpegToRgbMat
 import com.android.example.cameraxbasic.utils.rgb2bgr
@@ -8,13 +9,13 @@ import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
 import java.io.File
 import java.io.FileOutputStream
-import java.text.SimpleDateFormat
-import java.util.*
 
 class CounterDetectionManager(
         val detector: DarknetDetector,
         val storageDirectory: File
 ) {
+    val storage = DetectionStorage(storageDirectory)
+
     fun process(image: ImageProxy) {
         val rgbMat = image.jpegToRgbMat()
 
@@ -27,26 +28,22 @@ class CounterDetectionManager(
     }
 
     private fun save(originalRgb: Mat, visRgb: Mat, detections: Collection<ObjectDetectionResult>, timings: Timings) {
-        val stamp = createTimestamp()
-        File(storageDirectory, stamp)
-                .apply { mkdirs() }
-                .also { dir ->
-                    val imgName = File(dir, "frame.jpg").toString()
-                    val params = MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 100)
-                    Imgcodecs.imwrite(imgName, originalRgb.rgb2bgr(), params)
-                }
-                .also { dir ->
-                    val imgName = File(dir, "detection.jpg").toString()
-                    Imgcodecs.imwrite(imgName, visRgb.rgb2bgr())
-                }
-                .also { dir ->
-                    save(File(dir, "detections_log.txt"), detections, timings)
-                }
+        storage.newItem { originalImg: File, detectionsImg: File, detectionsInfo: File ->
+            save(originalImg, originalRgb, 100)
+            save(detectionsImg, visRgb)
+            save(detectionsInfo, detections, timings)
+        }
+
+    }
+
+    private fun save(file: File, rgbImg: Mat, jpegQuality: Int? = null) {
+        val params = MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, jpegQuality ?: 50)
+        Imgcodecs.imwrite(file.toString(), rgbImg.rgb2bgr(), params)
     }
 
     private fun save(file: File, detections: Collection<ObjectDetectionResult>, timings: Timings) {
         val sb = StringBuilder()
-        sb.append("detectMs: ").appendln(timings.detectMs)
+        sb.appendln(deviceName()).append("detectMs: ").appendln(timings.detectMs)
         detections.forEach {
             sb.append("classId: ").append(it.classId)
                     .append("  classScore: ").append(it.classScore)
@@ -65,9 +62,6 @@ class CounterDetectionManager(
 
 
     companion object {
-        private const val TAG = "CameraXBasic"
-        private const val TIMESTAMP_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
-
         private val rgbRed = Scalar(200, 0, 0)
         private val rgbGreen = Scalar(0, 200, 0)
         private val rgbClassColors = arrayOf(rgbRed, rgbGreen)
@@ -76,9 +70,28 @@ class CounterDetectionManager(
         fun Rect2d.toRect() = Rect(x.toInt(), y.toInt(), width.toInt(), height.toInt())
         fun Rect2d.toDisplayStr() = "xywh( $x, $y, $width, $height )"
 
-        private fun createTimestamp() = SimpleDateFormat(TIMESTAMP_FORMAT, Locale.US).format(System.currentTimeMillis())
+        fun deviceName(): String? {
+            val manufacturer: String = Build.MANUFACTURER
+            val model: String = Build.MODEL
+            return if (model.toLowerCase().startsWith(manufacturer.toLowerCase())) {
+                capitalize(model)
+            } else {
+                capitalize(manufacturer) + " " + model
+            }
+        }
 
 
+        private fun capitalize(s: String?): String {
+            if (s == null || s.isEmpty()) {
+                return ""
+            }
+            val first = s[0]
+            return if (Character.isUpperCase(first)) {
+                s
+            } else {
+                Character.toUpperCase(first).toString() + s.substring(1)
+            }
+        }
     }
 
     data class Timings(val detectMs: Long)

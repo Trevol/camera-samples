@@ -39,22 +39,16 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.Navigation
 import com.android.example.cameraxbasic.KEY_EVENT_ACTION
 import com.android.example.cameraxbasic.KEY_EVENT_EXTRA
-import com.android.example.cameraxbasic.MainActivity
 import com.android.example.cameraxbasic.R
 import com.android.example.cameraxbasic.detection.CounterDetectionManager
 import com.android.example.cameraxbasic.detection.DarknetDetector
 import com.android.example.cameraxbasic.utils.*
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import java.io.File
-import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -72,7 +66,6 @@ class CameraFragment : Fragment() {
 
     private lateinit var container: ConstraintLayout
     private lateinit var viewFinder: PreviewView
-    private lateinit var outputDirectory: File
     private lateinit var broadcastManager: LocalBroadcastManager
 
     private var displayId: Int = -1
@@ -183,10 +176,8 @@ class CameraFragment : Fragment() {
         // Every time the orientation of device changes, update rotation for use cases
         displayManager.registerDisplayListener(displayListener, null)
 
-        // Determine the output directory
-        outputDirectory = MainActivity.getOutputDirectory(requireContext())
 
-        this.activity?.let { ManagerInstance.init(it) }
+        this.activity?.also { ManagerInstance.init(it) }
 
         // Wait for the views to be properly laid out
         viewFinder.post {
@@ -325,16 +316,6 @@ class CameraFragment : Fragment() {
         // Inflate a new view containing all UI for controlling the camera
         val controls = View.inflate(requireContext(), R.layout.camera_ui_container, container)
 
-        // In the background, load latest photo taken (if any) for gallery thumbnail
-        lifecycleScope.launch(Dispatchers.IO) {
-            outputDirectory.listFiles { file ->
-                EXTENSION_WHITELIST.contains(file.extension.toUpperCase(Locale.ROOT))
-            }?.max()?.let {
-                setGalleryThumbnail(Uri.fromFile(it))
-            }
-        }
-
-
         // Listener for button used to capture photo
         controls.findViewById<ImageButton>(R.id.camera_capture_button).setOnClickListener {
             imageCapture?.let { imageCapture ->
@@ -345,7 +326,10 @@ class CameraFragment : Fragment() {
                     }
 
                     override fun onCaptureSuccess(imageProxy: ImageProxy) {
-                        imageProxy.use { ManagerInstance.manager?.process(it) }
+                        imageProxy.use {
+                            ManagerInstance.manager?.process(it)
+                            navigateToStorage()
+                        }
                     }
                 })
 
@@ -360,21 +344,39 @@ class CameraFragment : Fragment() {
             }
         }
 
-        // Listener for button used to view the most recent photo
         controls.findViewById<ImageButton>(R.id.photo_view_button).setOnClickListener {
-            // Only navigate when the gallery has photos
-            if (true == outputDirectory.listFiles()?.isNotEmpty()) {
-                Navigation.findNavController(requireActivity(), R.id.fragment_container)
-                        .navigate(
-                                CameraFragmentDirections.actionCameraToGallery(outputDirectory.absolutePath)
-                        )
-            }
+            navigateToStorage()
         }
+
+
     }
 
-    /** Returns true if the device has an available back camera. False otherwise */
+    private fun navigateToStorage() {
+        fun nav() {
+            val absolutePath = ManagerInstance.manager!!.storage.storageDirectory.absolutePath
+            Navigation.findNavController(requireActivity(), R.id.fragment_container)
+                    .navigate(CameraFragmentDirections.actionCameraToGallery(absolutePath))
+        }
+        nav()
+    }
+
     private fun hasBackCamera(): Boolean {
         return cameraProvider?.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA) ?: false
+    }
+
+    object ManagerInstance {
+        var manager: CounterDetectionManager? = null
+
+        fun init(context: Context) {
+            if (manager != null) {
+                return
+            }
+            val cfgFile = Asset.getFilePath(context, yoloCfg)
+            val darknetModel = Asset.getFilePath(context, yoloVal)
+            val detector = DarknetDetector(cfgFile, darknetModel, 416)
+
+            manager = CounterDetectionManager(detector, Asset.downloads(storageDir))
+        }
     }
 
     private companion object {
@@ -383,22 +385,8 @@ class CameraFragment : Fragment() {
         private const val RATIO_16_9_VALUE = 16.0 / 9.0
         private const val yoloCfg = "yolov3-tiny-2cls.cfg"
         private const val yoloVal = "best.weights"
-        private const val resultsDir = "ElectroCounters"
+        private const val storageDir = "ElectroCounters"
 
-        private object ManagerInstance {
-            var manager: CounterDetectionManager? = null
-
-            fun init(context: Context) {
-                if (manager != null) {
-                    return
-                }
-                val cfgFile = Asset.getFilePath(context, yoloCfg)
-                val darknetModel = Asset.getFilePath(context, yoloVal)
-                val detector = DarknetDetector(cfgFile, darknetModel, 416)
-
-                manager = CounterDetectionManager(detector, Asset.downloads(resultsDir))
-            }
-        }
 
         inline fun View.afterMeasured(crossinline block: () -> Unit) {
             viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
