@@ -24,7 +24,7 @@ android {
     compileSdkVersion 29
     defaultConfig {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        applicationId "com.android.example.cameraxbasic"
+        applicationId "com.tavrida.ElectroCounters"
         minSdkVersion 21
         targetSdkVersion 29
         versionCode 1

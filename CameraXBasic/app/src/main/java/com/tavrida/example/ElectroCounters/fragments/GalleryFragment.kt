@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.example.cameraxbasic.fragments
+package com.tavrida.example.ElectroCounters.fragments
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -25,22 +25,19 @@ import androidx.fragment.app.FragmentManager
 import androidx.viewpager.widget.ViewPager
 import java.io.File
 import android.content.Intent
-import android.media.MediaScannerConnection
 import android.os.Build
 import android.webkit.MimeTypeMap
 import android.widget.ImageButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.FileProvider
-import com.android.example.cameraxbasic.BuildConfig
-import com.android.example.cameraxbasic.utils.padWithDisplayCutout
-import androidx.appcompat.app.AlertDialog
+import com.android.example.ElectroCounters.BuildConfig
+import com.tavrida.example.ElectroCounters.utils.padWithDisplayCutout
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
-import com.android.example.cameraxbasic.utils.showImmersive
-import com.android.example.cameraxbasic.R
-import java.util.Locale
+import com.android.example.ElectroCounters.R
+import com.android.example.ElectroCounters.fragments.GalleryFragmentArgs
 
 val EXTENSION_WHITELIST = arrayOf("JPG")
 

@@ -1,4 +1,4 @@
-package com.android.example.cameraxbasic.utils
+package com.tavrida.example.ElectroCounters.utils
 
 import android.content.Context
 import android.os.Environment

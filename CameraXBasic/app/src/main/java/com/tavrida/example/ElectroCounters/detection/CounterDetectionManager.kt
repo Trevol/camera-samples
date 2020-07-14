@@ -1,9 +1,9 @@
-package com.android.example.cameraxbasic.detection
+package com.tavrida.example.ElectroCounters.detection
 
 import android.os.Build
 import androidx.camera.core.ImageProxy
-import com.android.example.cameraxbasic.utils.jpegToRgbMat
-import com.android.example.cameraxbasic.utils.rgb2bgr
+import com.tavrida.example.ElectroCounters.utils.jpegToRgbMat
+import com.tavrida.example.ElectroCounters.utils.rgb2bgr
 import org.opencv.core.*
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc

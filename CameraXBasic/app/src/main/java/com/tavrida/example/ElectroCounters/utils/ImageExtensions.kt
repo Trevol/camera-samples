@@ -1,22 +1,10 @@
-package com.android.example.cameraxbasic.utils
+package com.tavrida.example.ElectroCounters.utils
 
-import android.annotation.SuppressLint
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.ImageFormat
-import android.media.Image
 import androidx.camera.core.ImageProxy
-import androidx.camera.core.internal.utils.ImageUtil
-import org.opencv.android.Utils
-import org.opencv.core.CvType
 import org.opencv.core.Mat
 import org.opencv.core.MatOfByte
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
-import java.io.File
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
-import java.lang.Exception
 import java.nio.ByteBuffer
 
 fun ImageProxy.jpegToRgbMat() =

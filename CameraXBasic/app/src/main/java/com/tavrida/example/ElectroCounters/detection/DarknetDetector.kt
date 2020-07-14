@@ -1,4 +1,4 @@
-package com.android.example.cameraxbasic.detection
+package com.tavrida.example.ElectroCounters.detection
 
 import org.opencv.core.*
 import org.opencv.dnn.Dnn

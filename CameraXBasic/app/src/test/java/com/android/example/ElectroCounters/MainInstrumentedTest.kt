@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.example.cameraxbasic
+package com.android.example.ElectroCounters
 
 import android.Manifest
 import android.content.Context
@@ -22,6 +22,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.ActivityTestRule
 import androidx.test.rule.GrantPermissionRule
+import com.tavrida.example.ElectroCounters.MainActivity
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -41,6 +42,6 @@ class MainInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test
         val context = ApplicationProvider.getApplicationContext() as Context
-        assertEquals("com.android.example.cameraxbasic", context.packageName)
+        assertEquals("com.android.example.ElectroCounters", context.packageName)
     }
 }

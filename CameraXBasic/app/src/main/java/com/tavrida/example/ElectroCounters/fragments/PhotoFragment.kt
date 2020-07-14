@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.example.cameraxbasic.fragments
+package com.tavrida.example.ElectroCounters.fragments
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -22,7 +22,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
-import com.android.example.cameraxbasic.R
+import com.android.example.ElectroCounters.R
 import com.bumptech.glide.Glide
 import java.io.File
 

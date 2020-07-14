@@ -1,4 +1,4 @@
-package com.android.example.cameraxbasic.utils
+package com.tavrida.example.ElectroCounters.utils
 
 fun Boolean.assert() {
     this.assert("Assertion failed")

@@ -1,9 +1,8 @@
-package com.android.example.cameraxbasic.detection
+package com.tavrida.example.ElectroCounters.detection
 
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 @Suppress("RECEIVER_NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 class DetectionStorage(val storageDirectory: File) {

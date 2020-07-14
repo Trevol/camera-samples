@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.example.cameraxbasic.fragments
+package com.tavrida.example.ElectroCounters.fragments
 
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
@@ -41,14 +41,19 @@ import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.Navigation
-import com.android.example.cameraxbasic.KEY_EVENT_ACTION
-import com.android.example.cameraxbasic.KEY_EVENT_EXTRA
-import com.android.example.cameraxbasic.R
-import com.android.example.cameraxbasic.detection.CounterDetectionManager
-import com.android.example.cameraxbasic.detection.DarknetDetector
-import com.android.example.cameraxbasic.utils.*
+import com.tavrida.example.ElectroCounters.KEY_EVENT_ACTION
+import com.tavrida.example.ElectroCounters.KEY_EVENT_EXTRA
+import com.android.example.ElectroCounters.R
+import com.android.example.ElectroCounters.fragments.CameraFragmentDirections
+import com.tavrida.example.ElectroCounters.detection.CounterDetectionManager
+import com.tavrida.example.ElectroCounters.detection.DarknetDetector
+import com.android.example.ElectroCounters.utils.*
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.tavrida.example.ElectroCounters.utils.ANIMATION_FAST_MILLIS
+import com.tavrida.example.ElectroCounters.utils.ANIMATION_SLOW_MILLIS
+import com.tavrida.example.ElectroCounters.utils.Asset
+import com.tavrida.example.ElectroCounters.utils.simulateClick
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit

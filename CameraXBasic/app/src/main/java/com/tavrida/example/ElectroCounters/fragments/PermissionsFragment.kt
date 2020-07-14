@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.example.cameraxbasic.fragments
+package com.tavrida.example.ElectroCounters.fragments
 
 import android.Manifest
 import android.content.Context
@@ -24,7 +24,8 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
-import com.android.example.cameraxbasic.R
+import com.android.example.ElectroCounters.R
+import com.android.example.ElectroCounters.fragments.PermissionsFragmentDirections
 
 private const val PERMISSIONS_REQUEST_CODE = 10
 private val PERMISSIONS_REQUIRED = arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
