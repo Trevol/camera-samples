@@ -37,7 +37,6 @@ import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
 import com.android.example.ElectroCounters.R
-import com.android.example.ElectroCounters.fragments.GalleryFragmentArgs
 
 val EXTENSION_WHITELIST = arrayOf("JPG")
 
