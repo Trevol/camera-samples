@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.tavrida.example.ElectroCounters.utils
+package com.tavrida.ElectroCounters.utils
 
 import android.os.Build
 import android.view.DisplayCutout

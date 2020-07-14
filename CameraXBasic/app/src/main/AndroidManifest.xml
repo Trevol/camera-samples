@@ -18,7 +18,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:dist="http://schemas.android.com/apk/distribution"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.android.example.ElectroCounters">
+    package="com.tavrida.ElectroCounters">
 
     <!-- Enable instant app support -->
     <dist:module dist:instant="true" />
@@ -39,7 +39,7 @@
         tools:ignore="AllowBackup">
 
         <activity
-            android:name="com.tavrida.example.ElectroCounters.MainActivity"
+            android:name="com.tavrida.ElectroCounters.MainActivity"
             android:clearTaskOnLaunch="true"
             android:theme="@style/AppTheme"
             android:icon="@mipmap/ic_launcher"

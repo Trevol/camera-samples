@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.tavrida.example.ElectroCounters.fragments
+package com.tavrida.ElectroCounters.fragments
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -30,13 +30,13 @@ import android.webkit.MimeTypeMap
 import android.widget.ImageButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.FileProvider
-import com.android.example.ElectroCounters.BuildConfig
-import com.tavrida.example.ElectroCounters.utils.padWithDisplayCutout
+import com.tavrida.ElectroCounters.BuildConfig
+import com.tavrida.ElectroCounters.utils.padWithDisplayCutout
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
-import com.android.example.ElectroCounters.R
+import com.tavrida.ElectroCounters.R
 
 val EXTENSION_WHITELIST = arrayOf("JPG")
 

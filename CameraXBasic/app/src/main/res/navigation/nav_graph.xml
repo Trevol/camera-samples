@@ -22,7 +22,7 @@
 
     <fragment
         android:id="@+id/permissions_fragment"
-        android:name="com.tavrida.example.ElectroCounters.fragments.PermissionsFragment"
+        android:name="com.tavrida.ElectroCounters.fragments.PermissionsFragment"
         android:label="PermissionsFragment" >
 
         <action
@@ -35,7 +35,7 @@
 
     <fragment
         android:id="@+id/camera_fragment"
-        android:name="com.tavrida.example.ElectroCounters.fragments.CameraFragment"
+        android:name="com.tavrida.ElectroCounters.fragments.CameraFragment"
         android:label="CameraFragment" >
 
         <action
@@ -52,7 +52,7 @@
 
     <fragment
         android:id="@+id/gallery_fragment"
-        android:name="com.tavrida.example.ElectroCounters.fragments.GalleryFragment"
+        android:name="com.tavrida.ElectroCounters.fragments.GalleryFragment"
         android:label="GalleryFragment" >
         <argument
             android:name="root_directory"

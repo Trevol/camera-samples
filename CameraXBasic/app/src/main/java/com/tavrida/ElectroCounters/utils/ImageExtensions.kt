@@ -1,4 +1,4 @@
-package com.tavrida.example.ElectroCounters.utils
+package com.tavrida.ElectroCounters.utils
 
 import androidx.camera.core.ImageProxy
 import org.opencv.core.Mat

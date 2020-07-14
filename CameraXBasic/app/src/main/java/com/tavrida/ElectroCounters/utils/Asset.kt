@@ -1,4 +1,4 @@
-package com.tavrida.example.ElectroCounters.utils
+package com.tavrida.ElectroCounters.utils
 
 import android.content.Context
 import android.os.Environment

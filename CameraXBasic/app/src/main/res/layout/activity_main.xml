@@ -25,4 +25,4 @@
     android:keepScreenOn="true"
     app:defaultNavHost="true"
     app:navGraph="@navigation/nav_graph"
-    tools:context="com.tavrida.example.ElectroCounters.MainActivity"/>
+    tools:context="com.tavrida.ElectroCounters.MainActivity"/>

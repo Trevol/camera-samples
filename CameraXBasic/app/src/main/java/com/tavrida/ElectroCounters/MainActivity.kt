@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.tavrida.example.ElectroCounters
+package com.tavrida.ElectroCounters
 
 import android.content.Context
 import android.os.Bundle
@@ -24,8 +24,7 @@ import java.io.File
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import android.content.Intent
 import android.widget.FrameLayout
-import com.android.example.ElectroCounters.R
-import com.tavrida.example.ElectroCounters.utils.FLAGS_FULLSCREEN
+import com.tavrida.ElectroCounters.utils.FLAGS_FULLSCREEN
 import org.opencv.android.OpenCVLoader
 
 const val KEY_EVENT_ACTION = "key_event_action"

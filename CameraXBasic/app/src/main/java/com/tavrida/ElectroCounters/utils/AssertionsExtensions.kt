@@ -1,4 +1,4 @@
-package com.tavrida.example.ElectroCounters.utils
+package com.tavrida.ElectroCounters.utils
 
 fun Boolean.assert() {
     this.assert("Assertion failed")

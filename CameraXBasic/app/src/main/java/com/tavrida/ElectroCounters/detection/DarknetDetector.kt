@@ -1,4 +1,4 @@
-package com.tavrida.example.ElectroCounters.detection
+package com.tavrida.ElectroCounters.detection
 
 import org.opencv.core.*
 import org.opencv.dnn.Dnn
