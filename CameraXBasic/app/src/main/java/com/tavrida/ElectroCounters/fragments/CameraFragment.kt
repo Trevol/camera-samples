@@ -30,6 +30,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
+import android.util.Size
 import android.view.*
 import android.widget.ImageButton
 import androidx.camera.core.*
@@ -262,9 +263,11 @@ class CameraFragment : Fragment() {
         // ImageCapture
         imageCapture = ImageCapture.Builder()
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
-                // We request aspect ratio but no resolution to match preview config, but letting
-                // CameraX optimize for whatever specific resolution best fits our use cases
                 .setTargetAspectRatio(screenAspectRatio)
+
+                // .setMaxResolution(Size(1920, 1080))
+                .setMaxResolution(Size(1280, 720))
+
                 // Set initial target rotation, we will have to call this again if rotation changes
                 // during the lifecycle of this use case
                 .setTargetRotation(rotation)

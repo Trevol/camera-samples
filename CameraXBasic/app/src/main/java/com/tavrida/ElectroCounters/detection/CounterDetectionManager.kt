@@ -3,8 +3,7 @@ package com.tavrida.ElectroCounters.detection
 import android.os.Build
 import android.util.Log
 import androidx.camera.core.ImageProxy
-import com.tavrida.ElectroCounters.utils.jpegToRgbMat
-import com.tavrida.ElectroCounters.utils.rgb2bgr
+import com.tavrida.ElectroCounters.utils.jpeg2RgbBgrMats
 import org.opencv.core.*
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
@@ -18,38 +17,28 @@ class CounterDetectionManager(
     val storage = DetectionStorage(storageDirectory)
 
     fun process(image: ImageProxy) {
-        Log.d("TP_TIMINGS", "process.enter ${System.currentTimeMillis()}")
-        val rgbMat = image.jpegToRgbMat()
-
-        Log.d("TP_TIMINGS", "process.jpegToMat ${System.currentTimeMillis()}")
+        val (rgbMat, bgrMat) = image.jpeg2RgbBgrMats()
 
         val t0 = System.currentTimeMillis()
         val detections = detector.detect(rgbMat)
         val t1 = System.currentTimeMillis()
 
-        Log.d("TP_TIMINGS", "process.detect ${System.currentTimeMillis()}")
-
-        val visImg: Mat = visualize(detections, rgbMat)
-
-        Log.d("TP_TIMINGS", "process.visualize ${System.currentTimeMillis()}")
-
-        save(rgbMat, visImg, detections, Timings(detectMs = t1 - t0))
-
-        Log.d("TP_TIMINGS", "process.save ${System.currentTimeMillis()}")
+        val visImg: Mat = visualize(detections, bgrMat)
+        save(bgrMat, visImg, detections, Timings(detectMs = t1 - t0))
     }
 
-    private fun save(originalRgb: Mat, visRgb: Mat, detections: Collection<ObjectDetectionResult>, timings: Timings) {
-        storage.newItem { originalImg: File, detectionsImg: File, detectionsInfo: File ->
-            save(originalImg, originalRgb, 100)
-            save(detectionsImg, visRgb)
-            save(detectionsInfo, detections, timings)
+    private fun save(originalBgr: Mat, visBgr: Mat, detections: Collection<ObjectDetectionResult>, timings: Timings) {
+        storage.newStorageItem { originalImgFile: File, detectionsImgFile: File, detectionsInfoFile: File ->
+            save(originalImgFile, originalBgr, 100)
+            save(detectionsImgFile, visBgr)
+            save(detectionsInfoFile, detections, timings)
         }
 
     }
 
-    private fun save(file: File, rgbImg: Mat, jpegQuality: Int? = null) {
+    private fun save(file: File, bgrImg: Mat, jpegQuality: Int? = null) {
         val params = MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, jpegQuality ?: 50)
-        Imgcodecs.imwrite(file.toString(), rgbImg.rgb2bgr(), params)
+        Imgcodecs.imwrite(file.toString(), bgrImg, params)
     }
 
     private fun save(file: File, detections: Collection<ObjectDetectionResult>, timings: Timings) {

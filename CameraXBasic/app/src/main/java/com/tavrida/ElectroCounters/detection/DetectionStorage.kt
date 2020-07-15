@@ -10,7 +10,7 @@ class DetectionStorage(val storageDirectory: File) {
 
     fun hasItems() = items.isNotEmpty()
 
-    fun newItem(filesAction: (originalImg: File, detectionsImg: File, detectionsInfo: File) -> Unit) {
+    fun newStorageItem(filesAction: (originalImg: File, detectionsImg: File, detectionsInfo: File) -> Unit) {
         val stamp = createTimestamp()
         File(storageDirectory, stamp)
                 .apply { mkdirs() }
