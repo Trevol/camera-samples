@@ -26,6 +26,7 @@ import androidx.viewpager.widget.ViewPager
 import java.io.File
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import android.webkit.MimeTypeMap
 import android.widget.ImageButton
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -127,5 +128,7 @@ class GalleryFragment internal constructor() : Fragment() {
                 startActivity(Intent.createChooser(intent, getString(R.string.share_hint)))
             }
         }
+
+
     }
 }

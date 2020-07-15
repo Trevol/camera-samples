@@ -1,6 +1,7 @@
 package com.tavrida.ElectroCounters.detection
 
 import android.os.Build
+import android.util.Log
 import androidx.camera.core.ImageProxy
 import com.tavrida.ElectroCounters.utils.jpegToRgbMat
 import com.tavrida.ElectroCounters.utils.rgb2bgr
@@ -12,19 +13,29 @@ import java.io.FileOutputStream
 
 class CounterDetectionManager(
         val detector: DarknetDetector,
-        val storageDirectory: File
+        storageDirectory: File
 ) {
     val storage = DetectionStorage(storageDirectory)
 
     fun process(image: ImageProxy) {
+        Log.d("TP_TIMINGS", "process.enter ${System.currentTimeMillis()}")
         val rgbMat = image.jpegToRgbMat()
+
+        Log.d("TP_TIMINGS", "process.jpegToMat ${System.currentTimeMillis()}")
 
         val t0 = System.currentTimeMillis()
         val detections = detector.detect(rgbMat)
         val t1 = System.currentTimeMillis()
 
+        Log.d("TP_TIMINGS", "process.detect ${System.currentTimeMillis()}")
+
         val visImg: Mat = visualize(detections, rgbMat)
+
+        Log.d("TP_TIMINGS", "process.visualize ${System.currentTimeMillis()}")
+
         save(rgbMat, visImg, detections, Timings(detectMs = t1 - t0))
+
+        Log.d("TP_TIMINGS", "process.save ${System.currentTimeMillis()}")
     }
 
     private fun save(originalRgb: Mat, visRgb: Mat, detections: Collection<ObjectDetectionResult>, timings: Timings) {
@@ -58,40 +69,25 @@ class CounterDetectionManager(
 
     private fun visualize(detections: Collection<ObjectDetectionResult>, rgbImg: Mat) = Mat()
             .apply { rgbImg.copyTo(this) }
-            .apply { detections.forEach { Imgproc.rectangle(this, it.box.toRect(), rgbClassColors[it.classId], 2) } }
+            .apply { detections.forEach { Imgproc.rectangle(this, it.box.toRect(), rgbClassColors[it.classId], 4) } }
 
 
     companion object {
-        private val rgbRed = Scalar(200, 0, 0)
-        private val rgbGreen = Scalar(0, 200, 0)
+        private val rgbRed = Scalar(255, 0, 0)
+        private val rgbGreen = Scalar(0, 255, 0)
         private val rgbClassColors = arrayOf(rgbRed, rgbGreen)
 
         fun Scalar(v0: Int, v1: Int, v2: Int) = Scalar(v0.toDouble(), v1.toDouble(), v2.toDouble())
         fun Rect2d.toRect() = Rect(x.toInt(), y.toInt(), width.toInt(), height.toInt())
         fun Rect2d.toDisplayStr() = "xywh( $x, $y, $width, $height )"
 
-        fun deviceName(): String? {
+        fun deviceName(): String {
             val manufacturer: String = Build.MANUFACTURER
             val model: String = Build.MODEL
-            return if (model.toLowerCase().startsWith(manufacturer.toLowerCase())) {
-                capitalize(model)
-            } else {
-                capitalize(manufacturer) + " " + model
-            }
+            return "$manufacturer $model"
         }
 
 
-        private fun capitalize(s: String?): String {
-            if (s == null || s.isEmpty()) {
-                return ""
-            }
-            val first = s[0]
-            return if (Character.isUpperCase(first)) {
-                s
-            } else {
-                Character.toUpperCase(first).toString() + s.substring(1)
-            }
-        }
     }
 
     data class Timings(val detectMs: Long)
