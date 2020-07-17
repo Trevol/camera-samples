@@ -43,7 +43,8 @@ class CounterDetectionManager(
 
     private fun save(file: File, detections: Collection<ObjectDetectionResult>, timings: Timings) {
         val sb = StringBuilder()
-        sb.appendln(deviceName()).append("detectMs: ").appendln(timings.detectMs)
+        sb.appendln(deviceName()).appendln(androidInfo())
+                .append("detectMs: ").appendln(timings.detectMs)
         detections.forEach {
             sb.append("classId: ").append(it.classId)
                     .append("  classScore: ").append(it.classScore)
@@ -76,6 +77,9 @@ class CounterDetectionManager(
             return "$manufacturer $model"
         }
 
+        fun androidInfo(): String {
+            return "${Build.VERSION.SDK_INT} ${Build.VERSION.RELEASE} ${Build.VERSION.CODENAME}"
+        }
 
     }
 
