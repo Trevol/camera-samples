@@ -388,8 +388,8 @@ class CameraFragment : Fragment() {
         private const val TAG = "CameraXBasic_LOG"
         private const val RATIO_4_3_VALUE = 4.0 / 3.0
         private const val RATIO_16_9_VALUE = 16.0 / 9.0
-        private const val yoloCfg = "yolov3-tiny-2cls-416.cfg"
-        private const val yoloWeights = "yolov3-tiny-2cls-416.weights"
+        private const val yoloCfg = "yolov3-tiny-2cls-320.cfg"
+        private const val yoloWeights = "yolov3-tiny-2cls-320.weights"
         private const val storageDir = "ElectroCounters"
 
 
