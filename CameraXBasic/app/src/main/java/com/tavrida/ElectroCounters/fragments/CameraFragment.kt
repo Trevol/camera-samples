@@ -381,7 +381,6 @@ class CameraFragment : Fragment() {
             val screenModel = Asset.getFilePath(context, screenModelWeights)
             val screenDetector = DarknetDetector(screenCfgFile, screenModel, 320)
 
-
             val digitsCfgFile = Asset.getFilePath(context, digitsModelCfg)
             val digitsModel = Asset.getFilePath(context, digitsModelWeights)
             val digitsDetector = DarknetDetector(digitsCfgFile, digitsModel, 320)
