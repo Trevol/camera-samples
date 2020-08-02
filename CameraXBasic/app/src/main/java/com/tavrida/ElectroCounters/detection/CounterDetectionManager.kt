@@ -42,7 +42,6 @@ class CounterDetectionManager(
             save(detectionsImgFile, visBgr)
             save(detectionsInfoFile, detections, timings)
         }
-
     }
 
     private fun save(file: File, bgrImg: Mat, jpegQuality: Int? = null) {
