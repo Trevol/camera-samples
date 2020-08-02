@@ -25,5 +25,5 @@ object Asset {
         }
     }
 
-    fun downloads(childObj: String = "") = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), childObj)
+    fun fileInDownloads(childObj: String = "") = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), childObj)
 }

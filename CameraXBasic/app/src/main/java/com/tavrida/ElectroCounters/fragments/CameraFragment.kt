@@ -22,11 +22,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.hardware.display.DisplayManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
@@ -49,10 +46,9 @@ import com.tavrida.ElectroCounters.KEY_EVENT_ACTION
 import com.tavrida.ElectroCounters.KEY_EVENT_EXTRA
 import com.tavrida.ElectroCounters.detection.CounterDetectionManager
 import com.tavrida.ElectroCounters.detection.DarknetDetector
-import com.tavrida.ElectroCounters.utils.ANIMATION_FAST_MILLIS
-import com.tavrida.ElectroCounters.utils.ANIMATION_SLOW_MILLIS
 import com.tavrida.ElectroCounters.utils.Asset
 import com.tavrida.ElectroCounters.utils.simulateClick
+import org.opencv.imgcodecs.Imgcodecs
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -322,8 +318,12 @@ class CameraFragment : Fragment() {
         // Inflate a new view containing all UI for controlling the camera
         val controls = View.inflate(requireContext(), R.layout.camera_ui_container, container)
 
-        // Listener for button used to capture photo
         controls.findViewById<ImageButton>(R.id.camera_capture_button).setOnClickListener {
+            val testFrame = Imgcodecs.imread(Asset.getFilePath(this.requireContext(), "test_frame.jpg"))
+            ManagerInstance.manager?.process(testFrame)
+            navigateToStorage()
+
+            /*
             imageCapture?.let { imageCapture ->
                 imageCapture.takePicture(cameraExecutor, object : ImageCapture.OnImageCapturedCallback() {
                     override fun onError(exc: ImageCaptureException) {
@@ -347,6 +347,7 @@ class CameraFragment : Fragment() {
                     }, ANIMATION_SLOW_MILLIS)
                 }
             }
+            */
         }
 
         controls.findViewById<ImageButton>(R.id.photo_view_button).setOnClickListener {
@@ -376,11 +377,16 @@ class CameraFragment : Fragment() {
             if (manager != null) {
                 return
             }
-            val cfgFile = Asset.getFilePath(context, yoloCfg)
-            val darknetModel = Asset.getFilePath(context, yoloWeights)
-            val detector = DarknetDetector(cfgFile, darknetModel, 416)
+            val screenCfgFile = Asset.getFilePath(context, screenModelCfg)
+            val screenModel = Asset.getFilePath(context, screenModelWeights)
+            val screenDetector = DarknetDetector(screenCfgFile, screenModel, 320)
 
-            manager = CounterDetectionManager(detector, Asset.downloads(storageDir))
+
+            val digitsCfgFile = Asset.getFilePath(context, digitsModelCfg)
+            val digitsModel = Asset.getFilePath(context, digitsModelWeights)
+            val digitsDetector = DarknetDetector(digitsCfgFile, digitsModel, 320)
+
+            manager = CounterDetectionManager(screenDetector, digitsDetector, Asset.fileInDownloads(storageDir))
         }
     }
 
@@ -388,8 +394,12 @@ class CameraFragment : Fragment() {
         private const val TAG = "CameraXBasic_LOG"
         private const val RATIO_4_3_VALUE = 4.0 / 3.0
         private const val RATIO_16_9_VALUE = 16.0 / 9.0
-        private const val yoloCfg = "yolov3-tiny-2cls-320.cfg"
-        private const val yoloWeights = "yolov3-tiny-2cls-320.weights"
+
+        private const val screenModelCfg = "yolov3-tiny-2cls-320.cfg"
+        private const val screenModelWeights = "yolov3-tiny-2cls-320.weights"
+        private const val digitsModelCfg = "yolov3-tiny-10cls-320.cfg"
+        private const val digitsModelWeights = "yolov3-tiny-10cls-320.weights"
+
         private const val storageDir = "ElectroCounters"
 
 

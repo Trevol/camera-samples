@@ -1,8 +1,8 @@
 package com.tavrida.ElectroCounters.detection
 
 import android.os.Build
-import android.util.Log
 import androidx.camera.core.ImageProxy
+import com.tavrida.ElectroCounters.utils.bgr2rgb
 import com.tavrida.ElectroCounters.utils.jpeg2RgbBgrMats
 import org.opencv.core.*
 import org.opencv.imgcodecs.Imgcodecs
@@ -11,16 +11,25 @@ import java.io.File
 import java.io.FileOutputStream
 
 class CounterDetectionManager(
-        val detector: DarknetDetector,
+        val screenDetector: DarknetDetector,
+        val digitsDetector: DarknetDetector,
         storageDirectory: File
 ) {
     val storage = DetectionStorage(storageDirectory)
 
     fun process(image: ImageProxy) {
         val (rgbMat, bgrMat) = image.jpeg2RgbBgrMats()
+        process(rgbMat, bgrMat)
+    }
 
+    fun process(bgrMat: Mat) {
+        val rgbMat = bgrMat.bgr2rgb()
+        process(rgbMat, bgrMat)
+    }
+
+    private fun process(rgbMat: Mat, bgrMat: Mat) {
         val t0 = System.currentTimeMillis()
-        val detections = detector.detect(rgbMat)
+        val detections = screenDetector.detect(rgbMat)
         val t1 = System.currentTimeMillis()
 
         val visImg: Mat = visualize(detections, bgrMat)
