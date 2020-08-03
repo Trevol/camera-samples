@@ -36,6 +36,11 @@ class CounterDetectionManager(
         save(bgrMat, visImg, detections, Timings(detectMs = t1 - t0))
     }
 
+    private fun detectDigits(rgbMat: Mat) {
+        val detections = screenDetector.detect(rgbMat)
+        detections.firstOrNull { r -> r.classId == screenClassId }
+    }
+
     private fun save(originalBgr: Mat, visBgr: Mat, detections: Collection<ObjectDetectionResult>, timings: Timings) {
         storage.newStorageItem { originalImgFile: File, detectionsImgFile: File, detectionsInfoFile: File ->
             save(originalImgFile, originalBgr, 100)
@@ -71,6 +76,7 @@ class CounterDetectionManager(
 
 
     companion object {
+        const val screenClassId = 1
         private val rgbRed = Scalar(255, 0, 0)
         private val rgbGreen = Scalar(0, 255, 0)
         private val rgbClassColors = arrayOf(rgbRed, rgbGreen)
