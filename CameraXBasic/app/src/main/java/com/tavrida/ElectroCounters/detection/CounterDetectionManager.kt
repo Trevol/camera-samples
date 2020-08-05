@@ -2,8 +2,7 @@ package com.tavrida.ElectroCounters.detection
 
 import android.os.Build
 import androidx.camera.core.ImageProxy
-import com.tavrida.ElectroCounters.utils.bgr2rgb
-import com.tavrida.ElectroCounters.utils.jpeg2RgbBgrMats
+import com.tavrida.ElectroCounters.utils.*
 import org.opencv.core.*
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
@@ -28,17 +27,26 @@ class CounterDetectionManager(
     }
 
     private fun process(rgbMat: Mat, bgrMat: Mat) {
-        val t0 = System.currentTimeMillis()
-        val detections = screenDetector.detect(rgbMat)
-        val t1 = System.currentTimeMillis()
+        detectDigits(rgbMat)
+        // val t0 = System.currentTimeMillis()
+        // val detections = screenDetector.detect(rgbMat)
+        // val t1 = System.currentTimeMillis()
 
-        val visImg: Mat = visualize(detections, bgrMat)
-        save(bgrMat, visImg, detections, Timings(detectMs = t1 - t0))
+        // val visImg: Mat = visualize(detections, bgrMat)
+        // save(bgrMat, visImg, detections, Timings(detectMs = t1 - t0))
     }
 
     private fun detectDigits(rgbMat: Mat) {
-        val detections = screenDetector.detect(rgbMat)
-        detections.firstOrNull { r -> r.classId == screenClassId }
+        val screenImg = detectScreen(rgbMat) ?: return
+        val digitsDetections = digitsDetector.detect(screenImg)
+        digitsDetections
+    }
+
+    private fun detectScreen(rgbFrame: Mat): Mat? {
+        val detections = screenDetector.detect(rgbFrame)
+        val screenDetection = detections.firstOrNull { r -> r.classId == screenClassId }
+                ?: return null
+        return rgbFrame.roi(screenDetection.box, 5)
     }
 
     private fun save(originalBgr: Mat, visBgr: Mat, detections: Collection<ObjectDetectionResult>, timings: Timings) {
@@ -82,7 +90,6 @@ class CounterDetectionManager(
         private val rgbClassColors = arrayOf(rgbRed, rgbGreen)
 
         fun Scalar(v0: Int, v1: Int, v2: Int) = Scalar(v0.toDouble(), v1.toDouble(), v2.toDouble())
-        fun Rect2d.toRect() = Rect(x.toInt(), y.toInt(), width.toInt(), height.toInt())
         fun Rect2d.toDisplayStr() = "xywh( $x, $y, $width, $height )"
 
         fun deviceName(): String {

@@ -1,5 +1,6 @@
 package com.tavrida.ElectroCounters.detection
 
+import com.tavrida.ElectroCounters.utils.latterbox
 import org.opencv.core.*
 import org.opencv.dnn.Dnn
 import org.opencv.dnn.Net
@@ -16,15 +17,24 @@ class DarknetDetector(
     val outputLayers: List<String> = net.outputLayers()
     val inputSize = Size(inputSize, inputSize)
 
-    fun detect(img: Mat): Collection<ObjectDetectionResult> {
-        val inputBlob = Dnn.blobFromImage(img, 1 / 255.0, inputSize, Scalar.all(0.0), true, false)
+    fun detect(rgbImg: Mat): Collection<ObjectDetectionResult> {
+        val inputBlob = preprocess(rgbImg, inputSize)
         net.setInput(inputBlob)
 
         val outputBlobs = ArrayList<Mat>()
         net.forward(outputBlobs, outputLayers)
 
-        return postprocess(img, outputBlobs, confThreshold, nmsThreshold)
+        return postprocess(rgbImg, outputBlobs, confThreshold, nmsThreshold)
     }
+
+    fun preprocess(rgbImage: Mat, inputSize: Size): Mat {
+        val (img) = latterbox(rgbImage, inputSize)
+        val blob = Dnn.blobFromImage(img, 1 / 255.0)
+        return blob
+    }
+
+    fun preprocess__(rgbImage: Mat, inputSize: Size) =
+            Dnn.blobFromImage(rgbImage, 1 / 255.0, inputSize, Scalar.all(0.0), false, false)
 
     fun postprocess(
             frame: Mat,
