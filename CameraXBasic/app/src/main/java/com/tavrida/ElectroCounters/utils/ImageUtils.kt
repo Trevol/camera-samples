@@ -2,6 +2,7 @@ package com.tavrida.ElectroCounters.utils
 
 import android.util.Log
 import androidx.camera.core.ImageProxy
+import com.tavrida.ElectroCounters.BuildConfig
 import org.opencv.core.*
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
@@ -15,7 +16,7 @@ fun ImageProxy.jpeg2RgbBgrMats() =
                 .let { Imgcodecs.imdecode(MatOfByte(*it), Imgcodecs.IMREAD_COLOR) }
                 .let { bgr -> Pair(bgr.bgr2rgb(), bgr) }
 
-
+fun Mat.copy() = Mat().also { this.copyTo(it) }
 fun Mat.bgr2rgbInplace() = this.also { Imgproc.cvtColor(this, it, Imgproc.COLOR_BGR2RGB) }
 fun Mat.bgr2rgb() = Mat().also { rgb -> Imgproc.cvtColor(this, rgb, Imgproc.COLOR_RGB2BGR) }
 fun Mat.rgb2bgr() = Mat().also { bgr -> Imgproc.cvtColor(this, bgr, Imgproc.COLOR_RGB2BGR) }
@@ -81,4 +82,42 @@ fun latterbox(
     img = Mat().also { Core.copyMakeBorder(img, it, top, bottom, left, right, Core.BORDER_CONSTANT, color) }
 
     return Triple(img, whRatio, Size(dw, dh))
+}
+
+fun hstack(vararg mats: Mat, fillColor: Scalar = Scalar.all(0.0)): Mat {
+    mats.isNotEmpty().assert()
+    // stack horizontally
+    val height = mats.maxBy { it.height() }!!.height()
+    val width = mats.sumBy { it.width() }
+    val stacked = Mat(height, width, mats[0].type(), fillColor)
+    var x = 0
+    for (m in mats) {
+        val roi = Mat(
+                stacked,
+                Range(0, m.height()),
+                Range(x, x + m.width())
+        )
+        m.copyTo(roi)
+        x += m.width()
+    }
+    return stacked
+}
+
+fun vstack(vararg mats: Mat, fillColor: Scalar = Scalar.all(0.0)): Mat {
+    mats.isNotEmpty().assert()
+    // stack horizontally
+    val height = mats.sumBy { it.height() }
+    val width = mats.maxBy { it.width() }!!.width()
+    val stacked = Mat(height, width, mats[0].type(), fillColor)
+    var y = 0
+    for (m in mats) {
+        val roi = Mat(
+                stacked,
+                Range(y, y + m.height()),
+                Range(0, m.width())
+        )
+        m.copyTo(roi)
+        y += m.height()
+    }
+    return stacked
 }

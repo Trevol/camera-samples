@@ -27,67 +27,89 @@ class CounterDetectionManager(
     }
 
     private fun process(rgbMat: Mat, bgrMat: Mat) {
-        detectDigits(rgbMat)
-        // val t0 = System.currentTimeMillis()
-        // val detections = screenDetector.detect(rgbMat)
-        // val t1 = System.currentTimeMillis()
+        // detect screen
+        val screenResult = screenDetector.detect(rgbMat)
+        // extract screen image
+        val screenDetection = screenResult.detections.firstOrNull { r -> r.classId == screenClassId }
 
-        // val visImg: Mat = visualize(detections, bgrMat)
+        var screenRgbImg: Mat? = null
+        var digitsResult: DarknetDetector.DetectionResult? = null
+        if (screenDetection != null) {
+            screenRgbImg = rgbMat.roi(screenDetection.box, 5)
+            digitsResult = digitsDetector.detect(screenRgbImg)
+        }
+
+        val digitsBgrImg = screenRgbImg?.rgb2bgr()
+        val visualizationImg = visualize(
+                ImgDetections(bgrMat.copy(), screenResult.detections),
+                digitsResult?.let { ImgDetections(digitsBgrImg!!.copy(), digitsResult.detections) }
+        )
+
         // save(bgrMat, visImg, detections, Timings(detectMs = t1 - t0))
+        Saver(storage)
     }
 
-    private fun detectDigits(rgbMat: Mat) {
-        val screenImg = detectScreen(rgbMat) ?: return
-        val digitsDetections = digitsDetector.detect(screenImg)
-        digitsDetections
-    }
+    private data class ImgDetections(val img: Mat, val detections: Collection<ObjectDetectionResult>)
 
-    private fun detectScreen(rgbFrame: Mat): Mat? {
-        val detections = screenDetector.detect(rgbFrame)
-        val screenDetection = detections.firstOrNull { r -> r.classId == screenClassId }
-                ?: return null
-        return rgbFrame.roi(screenDetection.box, 5)
-    }
-
-    private fun save(originalBgr: Mat, visBgr: Mat, detections: Collection<ObjectDetectionResult>, timings: Timings) {
-        storage.newStorageItem { originalImgFile: File, detectionsImgFile: File, detectionsInfoFile: File ->
-            save(originalImgFile, originalBgr, 100)
-            save(detectionsImgFile, visBgr)
-            save(detectionsInfoFile, detections, timings)
+    private fun visualize(screen: ImgDetections, digits: ImgDetections?): Mat {
+        screen.detections.forEach { Imgproc.rectangle(screen.img, it.box.toRect(), bgrClassColors[it.classId], 4) }
+        if (digits == null)
+            return screen.img
+        val digitsOnlyImg = digits.img.copy()
+        digits.detections.forEach { d ->
+            Imgproc.rectangle(digits.img, d.box.toRect(), bgrGreen, 1)
+            Imgproc.rectangle(digitsOnlyImg, d.box.toRect(), bgrGreen, 1)
+            val labelOrd = Point(d.box.x + 2, d.box.y + d.box.height - 2)
+            Imgproc.putText(digitsOnlyImg, d.classId.toString(), labelOrd, Imgproc.FONT_HERSHEY_SIMPLEX, .75, bgrGreen)
         }
+        vstack(
+                hstack(digits.img, digitsOnlyImg).resize(width=screen.img.width()),
+                screen.img
+        )
+        return Mat()
     }
 
-    private fun save(file: File, bgrImg: Mat, jpegQuality: Int? = null) {
-        val params = MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, jpegQuality ?: 50)
-        Imgcodecs.imwrite(file.toString(), bgrImg, params)
-    }
+    private fun visualize(detections: Collection<ObjectDetectionResult>, rgbImg: Mat) =
+            detections.forEach { Imgproc.rectangle(rgbImg, it.box.toRect(), bgrClassColors[it.classId], 4) }
 
-    private fun save(file: File, detections: Collection<ObjectDetectionResult>, timings: Timings) {
-        val sb = StringBuilder()
-        sb.appendln(deviceName()).appendln(androidInfo())
-                .append("detectMs: ").appendln(timings.detectMs)
-        detections.forEach {
-            sb.append("classId: ").append(it.classId)
-                    .append("  classScore: ").append(it.classScore)
-                    .append("  box: ").appendln(it.box.toDisplayStr())
+
+    class Saver(private val storage: DetectionStorage) {
+        private fun save(originalBgr: Mat, visBgr: Mat, detections: Collection<ObjectDetectionResult>, timings: Timings) {
+            storage.newStorageItem { originalImgFile: File, detectionsImgFile: File, detectionsInfoFile: File ->
+                save(originalImgFile, originalBgr, 100)
+                save(detectionsImgFile, visBgr)
+                save(detectionsInfoFile, detections, timings)
+            }
         }
-        FileOutputStream(file).use { fs ->
-            fs.writer().use { wr ->
-                wr.write(sb.toString())
+
+        private fun save(file: File, bgrImg: Mat, jpegQuality: Int? = null) {
+            val params = MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, jpegQuality ?: 50)
+            Imgcodecs.imwrite(file.toString(), bgrImg, params)
+        }
+
+        private fun save(file: File, detections: Collection<ObjectDetectionResult>, timings: Timings) {
+            val sb = StringBuilder()
+            sb.appendln(deviceName()).appendln(androidInfo())
+                    .append("detectMs: ").appendln(timings.detectMs)
+            detections.forEach {
+                sb.append("classId: ").append(it.classId)
+                        .append("  classScore: ").append(it.classScore)
+                        .append("  box: ").appendln(it.box.toDisplayStr())
+            }
+            FileOutputStream(file).use { fs ->
+                fs.writer().use { wr ->
+                    wr.write(sb.toString())
+                }
             }
         }
     }
 
-    private fun visualize(detections: Collection<ObjectDetectionResult>, rgbImg: Mat) = Mat()
-            .apply { rgbImg.copyTo(this) }
-            .apply { detections.forEach { Imgproc.rectangle(this, it.box.toRect(), rgbClassColors[it.classId], 4) } }
-
 
     companion object {
         const val screenClassId = 1
-        private val rgbRed = Scalar(255, 0, 0)
-        private val rgbGreen = Scalar(0, 255, 0)
-        private val rgbClassColors = arrayOf(rgbRed, rgbGreen)
+        private val bgrRed = Scalar(0, 0, 255)
+        private val bgrGreen = Scalar(0, 255, 0)
+        private val bgrClassColors = arrayOf(bgrRed, bgrGreen)
 
         fun Scalar(v0: Int, v1: Int, v2: Int) = Scalar(v0.toDouble(), v1.toDouble(), v2.toDouble())
         fun Rect2d.toDisplayStr() = "xywh( $x, $y, $width, $height )"
@@ -104,5 +126,5 @@ class CounterDetectionManager(
 
     }
 
-    data class Timings(val detectMs: Long)
+
 }

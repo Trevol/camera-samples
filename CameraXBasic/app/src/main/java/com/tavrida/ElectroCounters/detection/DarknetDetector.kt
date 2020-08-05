@@ -17,14 +17,19 @@ class DarknetDetector(
     val outputLayers: List<String> = net.outputLayers()
     val inputSize = Size(inputSize, inputSize)
 
-    fun detect(rgbImg: Mat): Collection<ObjectDetectionResult> {
+    data class DetectionResult(val detections: Collection<ObjectDetectionResult>, val durationInMs: Long)
+
+    fun detect(rgbImg: Mat): DetectionResult {
+        val t0 = System.currentTimeMillis()
         val inputBlob = preprocess(rgbImg, inputSize)
         net.setInput(inputBlob)
 
         val outputBlobs = ArrayList<Mat>()
         net.forward(outputBlobs, outputLayers)
 
-        return postprocess(rgbImg, outputBlobs, confThreshold, nmsThreshold)
+        val detections = postprocess(rgbImg, outputBlobs, confThreshold, nmsThreshold)
+        val t1 = System.currentTimeMillis()
+        return DetectionResult(detections, t1 - t0)
     }
 
     fun preprocess(rgbImage: Mat, inputSize: Size): Mat {
@@ -32,9 +37,6 @@ class DarknetDetector(
         val blob = Dnn.blobFromImage(img, 1 / 255.0)
         return blob
     }
-
-    fun preprocess__(rgbImage: Mat, inputSize: Size) =
-            Dnn.blobFromImage(rgbImage, 1 / 255.0, inputSize, Scalar.all(0.0), false, false)
 
     fun postprocess(
             frame: Mat,
