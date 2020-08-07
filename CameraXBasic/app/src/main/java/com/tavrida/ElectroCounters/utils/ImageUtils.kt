@@ -1,8 +1,6 @@
 package com.tavrida.ElectroCounters.utils
 
-import android.util.Log
 import androidx.camera.core.ImageProxy
-import com.tavrida.ElectroCounters.BuildConfig
 import org.opencv.core.*
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
@@ -21,13 +19,21 @@ fun Mat.bgr2rgbInplace() = this.also { Imgproc.cvtColor(this, it, Imgproc.COLOR_
 fun Mat.bgr2rgb() = Mat().also { rgb -> Imgproc.cvtColor(this, rgb, Imgproc.COLOR_RGB2BGR) }
 fun Mat.rgb2bgr() = Mat().also { bgr -> Imgproc.cvtColor(this, bgr, Imgproc.COLOR_RGB2BGR) }
 
-fun Mat.roi(roi: Rect2d, padding: Int = 0): Mat {
+fun Mat.roi(roi: Rect, padding: Int = 0) = this.roi(roi, padding, padding)
+
+fun Mat.roi(roi: Rect, hPadding: Int = 0, vPadding: Int = 0): Mat {
     val height = this.rows()
     val width = this.cols()
-    val roi = Rect2d(max(roi.x - padding, .0), max(roi.y - padding, .0),
-            min(roi.width + padding, width.toDouble()),
-            min(roi.height + padding, height.toDouble()))
-    return Mat(this, roi.toRect())
+    // TODO("Что-то тут не так...")
+    val paddedX = max(roi.x - hPadding, 0)
+    val paddedY = max(roi.y - vPadding, 0)
+    val roi = Rect(
+            paddedX,
+            paddedY,
+            min(roi.width + hPadding + hPadding, width - paddedX),
+            min(roi.height + vPadding + vPadding, height - paddedY)
+    )
+    return Mat(this, roi)
 }
 
 fun Rect2d.toRect() = Rect(x.toInt(), y.toInt(), width.toInt(), height.toInt())
@@ -40,6 +46,9 @@ private fun ByteBuffer.toArray() = ByteArray(this.capacity())
 
 fun Range(s: Double, e: Double) = Range(s.toInt(), e.toInt())
 fun Size(width: Int, height: Int) = Size(width.toDouble(), height.toDouble())
+fun Scalar(v0: Int, v1: Int, v2: Int) = Scalar(v0.toDouble(), v1.toDouble(), v2.toDouble())
+fun Scalar(v0: Int) = Scalar(v0.toDouble())
+fun Rect2d.toDisplayStr() = "xywh( $x, $y, $width, $height )"
 
 fun latterbox(
         img: Mat,
@@ -120,4 +129,21 @@ fun vstack(vararg mats: Mat, fillColor: Scalar = Scalar.all(0.0)): Mat {
         y += m.height()
     }
     return stacked
+}
+
+fun Mat.resize(width: Int? = null, height: Int? = null, interpolation: Int = Imgproc.INTER_LINEAR): Mat {
+    if (width == null && height == null)
+        throw AssertionError("width == null && height == null")
+    if (width != null && height != null)
+        return Mat().also {
+            Imgproc.resize(this, it, Size(width, height), .0, .0, interpolation)
+        }
+    val k = if (width != null) {
+        width / this.width().toDouble()
+    } else {
+        height!! / this.height().toDouble()
+    }
+    return Mat().also {
+        Imgproc.resize(this, it, Size(), k, k, interpolation)
+    }
 }

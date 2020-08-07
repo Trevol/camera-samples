@@ -21,6 +21,7 @@ class DarknetDetector(
 
     fun detect(rgbImg: Mat): DetectionResult {
         val t0 = System.currentTimeMillis()
+
         val inputBlob = preprocess(rgbImg, inputSize)
         net.setInput(inputBlob)
 
@@ -28,6 +29,7 @@ class DarknetDetector(
         net.forward(outputBlobs, outputLayers)
 
         val detections = postprocess(rgbImg, outputBlobs, confThreshold, nmsThreshold)
+
         val t1 = System.currentTimeMillis()
         return DetectionResult(detections, t1 - t0)
     }

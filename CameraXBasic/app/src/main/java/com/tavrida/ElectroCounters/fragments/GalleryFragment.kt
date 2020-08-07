@@ -47,7 +47,7 @@ class GalleryFragment internal constructor() : Fragment() {
     /** AndroidX navigation arguments */
     private val args: GalleryFragmentArgs by navArgs()
 
-    private lateinit var mediaList: MutableList<File>
+    private lateinit var mediaList: List<File>
 
     /** Adapter class used to present a fragment containing one photo or video as a page */
     inner class MediaPagerAdapter(fm: FragmentManager) : FragmentStatePagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
@@ -58,16 +58,9 @@ class GalleryFragment internal constructor() : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         // Mark this as a retain fragment, so the lifecycle does not get restarted on config change
         retainInstance = true
-
-        val storage = CameraFragment.ManagerInstance.manager!!.storage
-
-
-        // Walk through all files in the root directory
-        // We reverse the order of the list to present the last photos first
-        mediaList = storage.items.map { it.detectionsImg }.toMutableList()
+        mediaList = CameraFragment.ManagerInstance.manager!!.galleryFiles()
     }
 
     override fun onCreateView(

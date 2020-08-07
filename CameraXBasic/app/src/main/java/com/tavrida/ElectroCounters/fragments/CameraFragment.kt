@@ -22,8 +22,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.hardware.display.DisplayManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
@@ -46,6 +49,8 @@ import com.tavrida.ElectroCounters.KEY_EVENT_ACTION
 import com.tavrida.ElectroCounters.KEY_EVENT_EXTRA
 import com.tavrida.ElectroCounters.detection.CounterDetectionManager
 import com.tavrida.ElectroCounters.detection.DarknetDetector
+import com.tavrida.ElectroCounters.utils.ANIMATION_FAST_MILLIS
+import com.tavrida.ElectroCounters.utils.ANIMATION_SLOW_MILLIS
 import com.tavrida.ElectroCounters.utils.Asset
 import com.tavrida.ElectroCounters.utils.simulateClick
 import org.opencv.imgcodecs.Imgcodecs
@@ -319,11 +324,10 @@ class CameraFragment : Fragment() {
         val controls = View.inflate(requireContext(), R.layout.camera_ui_container, container)
 
         controls.findViewById<ImageButton>(R.id.camera_capture_button).setOnClickListener {
-            val testFrame = Imgcodecs.imread(Asset.getFilePath(this.requireContext(), "test_frame.jpg"))
+            /*val testFrame = Imgcodecs.imread(Asset.getFilePath(this.requireContext(), "test_frame.jpg"))
             ManagerInstance.manager?.process(testFrame)
-            navigateToStorage()
+            navigateToStorage()*/
 
-            /*
             imageCapture?.let { imageCapture ->
                 imageCapture.takePicture(cameraExecutor, object : ImageCapture.OnImageCapturedCallback() {
                     override fun onError(exc: ImageCaptureException) {
@@ -347,7 +351,6 @@ class CameraFragment : Fragment() {
                     }, ANIMATION_SLOW_MILLIS)
                 }
             }
-            */
         }
 
         controls.findViewById<ImageButton>(R.id.photo_view_button).setOnClickListener {
@@ -358,12 +361,9 @@ class CameraFragment : Fragment() {
     }
 
     private fun navigateToStorage() {
-        fun nav() {
-            val absolutePath = ManagerInstance.manager!!.storage.storageDirectory.absolutePath
-            Navigation.findNavController(requireActivity(), R.id.fragment_container)
-                    .navigate(CameraFragmentDirections.actionCameraToGallery(absolutePath))
-        }
-        nav()
+        Navigation
+                .findNavController(requireActivity(), R.id.fragment_container)
+                .navigate(CameraFragmentDirections.actionCameraToGallery(""))
     }
 
     private fun hasBackCamera(): Boolean {
