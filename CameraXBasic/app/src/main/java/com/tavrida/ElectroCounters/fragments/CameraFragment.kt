@@ -30,6 +30,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
+import android.util.Rational
 import android.util.Size
 import android.view.*
 import android.widget.ImageButton
@@ -257,7 +258,9 @@ class CameraFragment : Fragment() {
         preview = Preview.Builder()
                 // We request aspect ratio but no resolution
                 .setTargetAspectRatio(screenAspectRatio)
-                // Set initial target rotation
+                // .setTargetAspectRatioCustom(Rational(metrics.widthPixels, metrics.heightPixels))
+                // .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
+
                 .setTargetRotation(rotation)
                 .build()
 
@@ -268,6 +271,7 @@ class CameraFragment : Fragment() {
 
                 // .setMaxResolution(Size(1920, 1080))
                 .setMaxResolution(Size(1280, 720))
+                // .setTargetResolution()
 
                 // Set initial target rotation, we will have to call this again if rotation changes
                 // during the lifecycle of this use case
@@ -324,31 +328,37 @@ class CameraFragment : Fragment() {
         val controls = View.inflate(requireContext(), R.layout.camera_ui_container, container)
 
         controls.findViewById<ImageButton>(R.id.camera_capture_button).setOnClickListener {
-            /*val testFrame = Imgcodecs.imread(Asset.getFilePath(this.requireContext(), "test_frame.jpg"))
-            ManagerInstance.manager?.process(testFrame)
-            navigateToStorage()*/
+            val DEBUG_MODE = false
 
-            imageCapture?.let { imageCapture ->
-                imageCapture.takePicture(cameraExecutor, object : ImageCapture.OnImageCapturedCallback() {
-                    override fun onError(exc: ImageCaptureException) {
-                        Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
-                    }
+            if (DEBUG_MODE) {
 
-                    override fun onCaptureSuccess(imageProxy: ImageProxy) {
-                        imageProxy.use {
-                            ManagerInstance.manager?.process(it)
-                            navigateToStorage()
+                val testFrame = Imgcodecs.imread(Asset.getFilePath(this.requireContext(), "test_frame.jpg"))
+                ManagerInstance.manager?.process(testFrame)
+                navigateToStorage()
+
+            } else {
+                imageCapture?.let { imageCapture ->
+                    imageCapture.takePicture(cameraExecutor, object : ImageCapture.OnImageCapturedCallback() {
+                        override fun onError(exc: ImageCaptureException) {
+                            Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
                         }
-                    }
-                })
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {// We can only change the foreground Drawable using API level 23+ API
-                    // Display flash animation to indicate that photo was captured
-                    container.postDelayed({
-                        container.foreground = ColorDrawable(Color.WHITE)
-                        container.postDelayed(
-                                { container.foreground = null }, ANIMATION_FAST_MILLIS)
-                    }, ANIMATION_SLOW_MILLIS)
+                        override fun onCaptureSuccess(imageProxy: ImageProxy) {
+                            imageProxy.use {
+                                ManagerInstance.manager?.process(it)
+                                navigateToStorage()
+                            }
+                        }
+                    })
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {// We can only change the foreground Drawable using API level 23+ API
+                        // Display flash animation to indicate that photo was captured
+                        container.postDelayed({
+                            container.foreground = ColorDrawable(Color.WHITE)
+                            container.postDelayed(
+                                    { container.foreground = null }, ANIMATION_FAST_MILLIS)
+                        }, ANIMATION_SLOW_MILLIS)
+                    }
                 }
             }
         }
