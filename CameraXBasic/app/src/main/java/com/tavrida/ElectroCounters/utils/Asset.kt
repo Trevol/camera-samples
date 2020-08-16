@@ -25,5 +25,10 @@ object Asset {
         }
     }
 
+    @Throws(IOException::class)
+    fun getFilePath(context: Context, assetName: String, deleteOtherVersions: String): String {
+        File("").delete()
+        TODO()
+    }
     fun fileInDownloads(childObj: String = "") = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), childObj)
 }

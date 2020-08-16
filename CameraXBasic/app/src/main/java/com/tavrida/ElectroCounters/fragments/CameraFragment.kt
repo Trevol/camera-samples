@@ -30,7 +30,6 @@ import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
-import android.util.Rational
 import android.util.Size
 import android.view.*
 import android.widget.ImageButton
@@ -328,7 +327,7 @@ class CameraFragment : Fragment() {
         val controls = View.inflate(requireContext(), R.layout.camera_ui_container, container)
 
         controls.findViewById<ImageButton>(R.id.camera_capture_button).setOnClickListener {
-            val DEBUG_MODE = false
+            val DEBUG_MODE = true
 
             if (DEBUG_MODE) {
 
@@ -407,7 +406,7 @@ class CameraFragment : Fragment() {
         private const val screenModelCfg = "yolov3-tiny-2cls-320.cfg"
         private const val screenModelWeights = "yolov3-tiny-2cls-320.weights"
         private const val digitsModelCfg = "yolov3-tiny-10cls-320.cfg"
-        private const val digitsModelWeights = "yolov3-tiny-10cls-320.weights"
+        private const val digitsModelWeights = "yolov3-tiny-10cls-320.4.weights"
 
         private const val storageDir = "ElectroCounters"
 
