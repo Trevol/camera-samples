@@ -26,9 +26,19 @@ object Asset {
     }
 
     @Throws(IOException::class)
-    fun getFilePath(context: Context, assetName: String, deleteOtherVersions: String): String {
-        File("").delete()
+    fun getFilePath(context: Context, assetName: String, deleteOtherVersions: Boolean): String {
+        val filePath = getFilePath(context, assetName)
+        if (deleteOtherVersions) {
+            deleteOtherVersions(filePath)
+        }
+        return filePath
+    }
+
+    fun deleteOtherVersions(filePath: String) {
+        val (name, version) = splitNameVersion(filePath)
+
         TODO()
     }
+
     fun fileInDownloads(childObj: String = "") = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), childObj)
 }

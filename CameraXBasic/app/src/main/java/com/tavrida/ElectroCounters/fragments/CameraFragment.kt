@@ -331,7 +331,7 @@ class CameraFragment : Fragment() {
 
             if (DEBUG_MODE) {
 
-                val testFrame = Imgcodecs.imread(Asset.getFilePath(this.requireContext(), "test_frame.jpg"))
+                val testFrame = Imgcodecs.imread(Asset.getFilePath(this.requireContext(), "test_frame.jpg", true))
                 ManagerInstance.manager?.process(testFrame)
                 navigateToStorage()
 
@@ -386,12 +386,12 @@ class CameraFragment : Fragment() {
             if (manager != null) {
                 return
             }
-            val screenCfgFile = Asset.getFilePath(context, screenModelCfg)
-            val screenModel = Asset.getFilePath(context, screenModelWeights)
+            val screenCfgFile = Asset.getFilePath(context, screenModelCfg, true)
+            val screenModel = Asset.getFilePath(context, screenModelWeights, true)
             val screenDetector = DarknetDetector(screenCfgFile, screenModel, 320)
 
-            val digitsCfgFile = Asset.getFilePath(context, digitsModelCfg)
-            val digitsModel = Asset.getFilePath(context, digitsModelWeights)
+            val digitsCfgFile = Asset.getFilePath(context, digitsModelCfg, true)
+            val digitsModel = Asset.getFilePath(context, digitsModelWeights, true)
             val digitsDetector = DarknetDetector(digitsCfgFile, digitsModel, 320)
 
             manager = CounterDetectionManager(screenDetector, digitsDetector, Asset.fileInDownloads(storageDir))
