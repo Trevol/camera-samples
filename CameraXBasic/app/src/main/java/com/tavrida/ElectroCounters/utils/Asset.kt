@@ -2,6 +2,7 @@ package com.tavrida.ElectroCounters.utils
 
 import android.content.Context
 import android.os.Environment
+import android.util.Log
 import java.io.*
 import kotlin.jvm.Throws
 
@@ -17,13 +18,14 @@ object Asset {
         if (file.exists() && file.length() > 0) {
             return file.absolutePath
         }
-        context.assets.open(assetName).use { inputStream ->
+        val absolutePath = context.assets.open(assetName).use { inputStream ->
             FileOutputStream(file).use { os ->
                 inputStream.copyTo(os)
                 os.flush()
             }
-            return file.absolutePath
+            file.absolutePath
         }
+        return absolutePath
     }
 
     @Throws(IOException::class)

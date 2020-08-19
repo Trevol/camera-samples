@@ -327,7 +327,7 @@ class CameraFragment : Fragment() {
         val controls = View.inflate(requireContext(), R.layout.camera_ui_container, container)
 
         controls.findViewById<ImageButton>(R.id.camera_capture_button).setOnClickListener {
-            val DEBUG_MODE = false
+            val DEBUG_MODE = true
 
             if (DEBUG_MODE) {
                 val testFrame = Imgcodecs.imread(Asset.getFilePath(this.requireContext(), "test_frame.jpg", true))
