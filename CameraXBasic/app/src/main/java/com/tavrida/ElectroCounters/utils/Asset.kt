@@ -7,11 +7,11 @@ import java.io.*
 import kotlin.jvm.Throws
 
 object Asset {
-    /**
-     * Copies specified asset to the file in /files app directory and returns this file absolute path.
-     *
-     * @return absolute file path
-     */
+
+    fun getAssetBytes(context: Context, assetName: String) =
+            context.assets.open(assetName).use { it.readBytes() }
+
+
     @Throws(IOException::class)
     fun getFilePath(filesDir: File, context: Context, assetName: String): String {
         val file = File(filesDir, assetName)

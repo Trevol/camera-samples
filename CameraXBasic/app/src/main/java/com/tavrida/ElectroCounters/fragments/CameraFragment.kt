@@ -327,14 +327,12 @@ class CameraFragment : Fragment() {
         val controls = View.inflate(requireContext(), R.layout.camera_ui_container, container)
 
         controls.findViewById<ImageButton>(R.id.camera_capture_button).setOnClickListener {
-            val DEBUG_MODE = true
+            val DEBUG_MODE = false
 
             if (DEBUG_MODE) {
-
                 val testFrame = Imgcodecs.imread(Asset.getFilePath(this.requireContext(), "test_frame.jpg", true))
                 ManagerInstance.manager?.process(testFrame)
                 navigateToStorage()
-
             } else {
                 imageCapture?.let { imageCapture ->
                     imageCapture.takePicture(cameraExecutor, object : ImageCapture.OnImageCapturedCallback() {
@@ -386,8 +384,6 @@ class CameraFragment : Fragment() {
             if (manager != null) {
                 return
             }
-            val t0 = System.currentTimeMillis()
-
             val screenCfgFile = Asset.getFilePath(context, screenModelCfg, true)
             val screenModel = Asset.getFilePath(context, screenModelWeights, true)
             val screenDetector = DarknetDetector(screenCfgFile, screenModel, 320)
@@ -397,9 +393,6 @@ class CameraFragment : Fragment() {
             val digitsDetector = DarknetDetector(digitsCfgFile, digitsModel, 320)
 
             manager = CounterDetectionManager(screenDetector, digitsDetector, Asset.fileInDownloads(storageDir))
-
-            val t1 = System.currentTimeMillis()
-            Log.d("TTT-TTT-TTT", "${t1 - t0}")
         }
     }
 

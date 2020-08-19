@@ -6,16 +6,26 @@ import org.opencv.dnn.Dnn
 import org.opencv.dnn.Net
 import java.util.*
 
-class DarknetDetector(
-        cfgFile: String,
-        darknetModel: String,
-        inputSize: Int = 416,
-        var confThreshold: Float = 0.3f,
-        val nmsThreshold: Float = 0.4f
-) {
-    private val net: Net = makeNet(cfgFile, darknetModel)
-    val outputLayers: List<String> = net.outputLayers()
-    val inputSize = Size(inputSize, inputSize)
+class DarknetDetector {
+    var confThreshold: Float = 0.3f
+    var nmsThreshold: Float = 0.4f
+    private var net: Net
+    var outputLayers: List<String>
+    var inputSize: Size
+
+    constructor(net: Net, inputSize: Int = 416, confThreshold: Float = 0.3f, nmsThreshold: Float = 0.4f) {
+        this.net = net
+        this.outputLayers = net.outputLayers()
+        this.inputSize = Size(inputSize, inputSize)
+        this.confThreshold = confThreshold
+        this.nmsThreshold = nmsThreshold
+    }
+
+    constructor(cfgFile: String, darknetModel: String, inputSize: Int = 416, confThreshold: Float = 0.3f,
+                nmsThreshold: Float = 0.4f) : this(makeNet(cfgFile, darknetModel), inputSize, confThreshold, nmsThreshold)
+
+    constructor(cfgFile: ByteArray, darknetModel: ByteArray, inputSize: Int = 416, confThreshold: Float = 0.3f,
+                nmsThreshold: Float = 0.4f) : this(makeNet(cfgFile, darknetModel), inputSize, confThreshold, nmsThreshold)
 
     data class DetectionResult(val detections: Collection<ObjectDetectionResult>, val durationInMs: Long)
 
@@ -94,10 +104,19 @@ class DarknetDetector(
 
     companion object {
         private fun makeNet(cfgFile: String, darknetModel: String): Net {
-            val net = Dnn.readNetFromDarknet(cfgFile, darknetModel)
-            net.setPreferableBackend(Dnn.DNN_BACKEND_OPENCV)
-            net.setPreferableTarget(Dnn.DNN_TARGET_CPU)
-            return net
+            return Dnn.readNetFromDarknet(cfgFile, darknetModel).apply {
+                setPreferableBackend(Dnn.DNN_BACKEND_OPENCV)
+                setPreferableTarget(Dnn.DNN_TARGET_CPU)
+            }
+        }
+
+        private fun makeNet(cfgBuffer: ByteArray, darknetBuffer: ByteArray): Net {
+            val cfgBuffer = MatOfByte().apply { fromArray(*cfgBuffer) }
+            val darknetBuffer = MatOfByte().apply { fromArray(*darknetBuffer) }
+            return Dnn.readNetFromDarknet(cfgBuffer, darknetBuffer).apply {
+                setPreferableBackend(Dnn.DNN_BACKEND_OPENCV)
+                setPreferableTarget(Dnn.DNN_TARGET_CPU)
+            }
         }
 
         private fun Size(width: Int, height: Int) = Size(width.toDouble(), height.toDouble())
