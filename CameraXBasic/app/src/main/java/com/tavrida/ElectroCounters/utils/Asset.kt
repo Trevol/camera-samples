@@ -18,6 +18,7 @@ object Asset {
         if (file.exists() && file.length() > 0) {
             return file.absolutePath
         }
+
         val absolutePath = context.assets.open(assetName).use { inputStream ->
             FileOutputStream(file).use { os ->
                 inputStream.copyTo(os)

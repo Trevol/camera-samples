@@ -84,10 +84,8 @@ class DarknetDetector(
         if (classIds.isEmpty()) {
             return arrayListOf()
         }
-        val matOfRect = MatOfRect2d()
-        matOfRect.fromList(boxes)
-        val matOfScores = MatOfFloat()
-        matOfScores.fromList(classScores)
+        val matOfRect = MatOfRect2d().apply { fromList(boxes) }
+        val matOfScores = MatOfFloat().apply { fromList(classScores) }
         val matOfIndexes = MatOfInt()
         Dnn.NMSBoxes(matOfRect, matOfScores, confThreshold, nmsThreshold, matOfIndexes)
 
