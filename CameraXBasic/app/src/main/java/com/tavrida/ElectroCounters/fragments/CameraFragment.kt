@@ -330,7 +330,6 @@ class CameraFragment : Fragment() {
             val DEBUG_MODE = false
 
             if (DEBUG_MODE) {
-
                 val testFrame = Imgcodecs.imread(Asset.getFilePath(this.requireContext(), "test_frame.jpg", true))
                 ManagerInstance.manager?.process(testFrame)
                 navigateToStorage()
