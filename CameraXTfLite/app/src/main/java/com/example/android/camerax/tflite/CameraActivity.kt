@@ -77,8 +77,11 @@ class CameraActivity : AppCompatActivity() {
         val cropSize = minOf(bitmapBuffer.width, bitmapBuffer.height)
         ImageProcessor.Builder()
             .add(ResizeWithCropOrPadOp(cropSize, cropSize))
-            .add(ResizeOp(
-                tfInputSize.height, tfInputSize.width, ResizeOp.ResizeMethod.NEAREST_NEIGHBOR))
+            .add(
+                ResizeOp(
+                    tfInputSize.height, tfInputSize.width, ResizeOp.ResizeMethod.NEAREST_NEIGHBOR
+                )
+            )
             .add(Rot90Op(-imageRotationDegrees / 90))
             .add(NormalizeOp(0f, 1f))
             .build()
@@ -87,7 +90,8 @@ class CameraActivity : AppCompatActivity() {
     private val tflite by lazy {
         Interpreter(
             FileUtil.loadMappedFile(this, MODEL_PATH),
-            Interpreter.Options().addDelegate(NnApiDelegate()))
+            Interpreter.Options().addDelegate(NnApiDelegate())
+        )
     }
 
     private val detector by lazy {
@@ -126,7 +130,8 @@ class CameraActivity : AppCompatActivity() {
                     if (isFrontFacing) postScale(-1f, 1f)
                 }
                 val uprightImage = Bitmap.createBitmap(
-                    bitmapBuffer, 0, 0, bitmapBuffer.width, bitmapBuffer.height, matrix, true)
+                    bitmapBuffer, 0, 0, bitmapBuffer.width, bitmapBuffer.height, matrix, true
+                )
                 image_predicted.setImageBitmap(uprightImage)
                 image_predicted.visibility = View.VISIBLE
             }
@@ -169,7 +174,8 @@ class CameraActivity : AppCompatActivity() {
                     // the analyzer has started running
                     imageRotationDegrees = image.imageInfo.rotationDegrees
                     bitmapBuffer = Bitmap.createBitmap(
-                        image.width, image.height, Bitmap.Config.ARGB_8888)
+                        image.width, image.height, Bitmap.Config.ARGB_8888
+                    )
                 }
 
                 // Early exit: image analysis is in paused state
@@ -178,14 +184,23 @@ class CameraActivity : AppCompatActivity() {
                     return@Analyzer
                 }
 
+                val t0 = System.currentTimeMillis()
                 // Convert the image to RGB and place it in our shared buffer
                 image.use { converter.yuvToRgb(image.image!!, bitmapBuffer) }
 
+                val tYuvToRgb = System.currentTimeMillis()
                 // Process the image in Tensorflow
-                val tfImage =  tfImageProcessor.process(tfImageBuffer.apply { load(bitmapBuffer) })
+                val tfImage = tfImageProcessor.process(tfImageBuffer.apply { load(bitmapBuffer) })
 
+                val tImageProcessor = System.currentTimeMillis()
                 // Perform the object detection for the current frame
                 val predictions = detector.predict(tfImage)
+
+                val tPredict = System.currentTimeMillis()
+
+                val txt = "${tPredict - tImageProcessor}   ${tPredict - t0} ${tImageProcessor - t0}"
+                Log.d("TTT-TTT-TTT", txt)
+                view_finder.post { text_timings.text = txt }
 
                 // Report only the top prediction
                 reportPrediction(predictions.maxBy { it.score })
@@ -208,7 +223,8 @@ class CameraActivity : AppCompatActivity() {
             // Apply declared configs to CameraX using the same lifecycle owner
             cameraProvider.unbindAll()
             val camera = cameraProvider.bindToLifecycle(
-                this as LifecycleOwner, cameraSelector, preview, imageAnalysis)
+                this as LifecycleOwner, cameraSelector, preview, imageAnalysis
+            )
 
             // Use the camera object to link our preview use case with the view
             preview.setSurfaceProvider(view_finder.createSurfaceProvider())
@@ -265,7 +281,8 @@ class CameraActivity : AppCompatActivity() {
                 view_finder.width - previewLocation.right,
                 previewLocation.top,
                 view_finder.width - previewLocation.left,
-                previewLocation.bottom)
+                previewLocation.bottom
+            )
         } else {
             previewLocation
         }
@@ -298,7 +315,8 @@ class CameraActivity : AppCompatActivity() {
         // Request permissions each time the app resumes, since they can be revoked at any time
         if (!hasPermissions(this)) {
             ActivityCompat.requestPermissions(
-                this, permissions.toTypedArray(), permissionsRequestCode)
+                this, permissions.toTypedArray(), permissionsRequestCode
+            )
         } else {
             bindCameraUseCases()
         }
