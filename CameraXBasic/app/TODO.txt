@@ -6,8 +6,17 @@
 
 
 - в превью камеры исправить соотношение сторон
+    - здесь нормально превью /home/trevol/Repos/Android/camera-samples/CameraXTfLite
+
 - глобальный обработчик ошибок (с сообщением и что-б не "падало" приложение)
     - протоколирование в файл?
+
+
+- тестирование в облаке
+  - https://adtmag.com/blogs/dev-watch/2017/05/device-clouds.aspx
+  - browserstack.com
+  - https://portal.kobiton.com/devices
+  - https://firebase.google.com/docs/test-lab/
 
 
 +++++ разрешение снимка поменьше просить у камеры
