@@ -5,6 +5,7 @@ import com.tavrida.ElectroCounters.utils.Asset
 
 class TwoStageDigitsDetectorProvider(context: Context) {
     val detector by lazy { instance.readDetector(context) }
+
     fun ensureDetector() {
         val d = detector
     }
