@@ -49,11 +49,13 @@ import com.tavrida.ElectroCounters.KEY_EVENT_ACTION
 import com.tavrida.ElectroCounters.KEY_EVENT_EXTRA
 import com.tavrida.ElectroCounters.detection.TwoStageDigitsDetector
 import com.tavrida.ElectroCounters.detection.DarknetDetector
+import com.tavrida.ElectroCounters.detection.TwoStageDigitsDetectorProvider
 import com.tavrida.ElectroCounters.utils.ANIMATION_FAST_MILLIS
 import com.tavrida.ElectroCounters.utils.ANIMATION_SLOW_MILLIS
 import com.tavrida.ElectroCounters.utils.Asset
 import com.tavrida.ElectroCounters.utils.simulateClick
 import org.opencv.imgcodecs.Imgcodecs
+import java.security.Provider
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -79,7 +81,9 @@ class CameraFragment : Fragment() {
     private var imageCapture: ImageCapture? = null
     private var camera: Camera? = null
     private var cameraProvider: ProcessCameraProvider? = null
-
+    private val detectorProvider by lazy {
+        TwoStageDigitsDetectorProvider(requireContext())
+    }
     private val displayManager by lazy {
         requireContext().getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
     }
@@ -181,7 +185,7 @@ class CameraFragment : Fragment() {
         // Every time the orientation of device changes, update rotation for use cases
         displayManager.registerDisplayListener(displayListener, null)
 
-        ManagerInstance.init(requireContext())
+        detectorProvider.ensureDetector()
 
         // Wait for the views to be properly laid out
         viewFinder.post {
@@ -234,6 +238,7 @@ class CameraFragment : Fragment() {
     }
 
     /** Declare and bind preview, capture and analysis use cases */
+    @SuppressLint("RestrictedApi")
     private fun bindCameraUseCases() {
 
         // Get screen metrics used to setup camera for full screen resolution
@@ -330,7 +335,7 @@ class CameraFragment : Fragment() {
 
             if (DEBUG_MODE) {
                 val testFrame = Imgcodecs.imread(Asset.getFilePath(this.requireContext(), "test_frame.jpg", true))
-                ManagerInstance.manager?.process(testFrame)
+                detectorProvider.detector.process(testFrame)
                 navigateToStorage()
             } else {
                 imageCapture?.let { imageCapture ->
@@ -341,7 +346,7 @@ class CameraFragment : Fragment() {
 
                         override fun onCaptureSuccess(imageProxy: ImageProxy) {
                             imageProxy.use {
-                                ManagerInstance.manager?.process(it)
+                                detectorProvider.detector.process(it)
                                 navigateToStorage()
                             }
                         }
@@ -376,38 +381,10 @@ class CameraFragment : Fragment() {
         return cameraProvider?.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA) ?: false
     }
 
-    object ManagerInstance {
-        var manager: TwoStageDigitsDetector? = null
-
-        fun init(context: Context) {
-            if (manager != null) {
-                return
-            }
-            val screenCfgFile = Asset.getFilePath(context, screenModelCfg, true)
-            val screenModel = Asset.getFilePath(context, screenModelWeights, true)
-            val screenDetector = DarknetDetector(screenCfgFile, screenModel, 320)
-
-            val digitsCfgFile = Asset.getFilePath(context, digitsModelCfg, true)
-            val digitsModel = Asset.getFilePath(context, digitsModelWeights, true)
-            val digitsDetector = DarknetDetector(digitsCfgFile, digitsModel, 320)
-
-            manager = TwoStageDigitsDetector(screenDetector, digitsDetector,
-                    null //Asset.fileInDownloads(storageDir)
-            )
-        }
-    }
-
     private companion object {
         private const val TAG = "CameraXBasic_LOG"
         private const val RATIO_4_3_VALUE = 4.0 / 3.0
         private const val RATIO_16_9_VALUE = 16.0 / 9.0
-
-        private const val screenModelCfg = "yolov3-tiny-2cls-320.cfg"
-        private const val screenModelWeights = "yolov3-tiny-2cls-320.weights"
-        private const val digitsModelCfg = "yolov3-tiny-10cls-320.cfg"
-        private const val digitsModelWeights = "yolov3-tiny-10cls-320.4.weights"
-
-        private const val storageDir = "ElectroCounters"
 
 
         inline fun View.afterMeasured(crossinline block: () -> Unit) {

@@ -38,6 +38,7 @@ import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
 import com.tavrida.ElectroCounters.R
+import com.tavrida.ElectroCounters.detection.TwoStageDigitsDetectorProvider
 
 val EXTENSION_WHITELIST = arrayOf("JPG")
 
@@ -60,7 +61,7 @@ class GalleryFragment internal constructor() : Fragment() {
         super.onCreate(savedInstanceState)
         // Mark this as a retain fragment, so the lifecycle does not get restarted on config change
         retainInstance = true
-        mediaList = CameraFragment.ManagerInstance.manager!!.galleryFiles()
+        mediaList = TwoStageDigitsDetectorProvider(requireContext()).detector.galleryFiles()
     }
 
     override fun onCreateView(
