@@ -24,7 +24,6 @@ fun Mat.roi(roi: Rect, padding: Int = 0) = this.roi(roi, padding, padding)
 fun Mat.roi(roi: Rect, hPadding: Int = 0, vPadding: Int = 0): Mat {
     val height = this.rows()
     val width = this.cols()
-    // TODO("Что-то тут не так...")
     val paddedX = max(roi.x - hPadding, 0)
     val paddedY = max(roi.y - vPadding, 0)
     val roi = Rect(
