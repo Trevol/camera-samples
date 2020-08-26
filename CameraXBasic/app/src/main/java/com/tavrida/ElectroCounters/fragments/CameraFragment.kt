@@ -47,7 +47,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.tavrida.ElectroCounters.KEY_EVENT_ACTION
 import com.tavrida.ElectroCounters.KEY_EVENT_EXTRA
-import com.tavrida.ElectroCounters.detection.CounterDetectionManager
+import com.tavrida.ElectroCounters.detection.TwoStageDigitsDetector
 import com.tavrida.ElectroCounters.detection.DarknetDetector
 import com.tavrida.ElectroCounters.utils.ANIMATION_FAST_MILLIS
 import com.tavrida.ElectroCounters.utils.ANIMATION_SLOW_MILLIS
@@ -181,8 +181,7 @@ class CameraFragment : Fragment() {
         // Every time the orientation of device changes, update rotation for use cases
         displayManager.registerDisplayListener(displayListener, null)
 
-
-        this.activity?.also { ManagerInstance.init(it) }
+        ManagerInstance.init(requireContext())
 
         // Wait for the views to be properly laid out
         viewFinder.post {
@@ -226,7 +225,7 @@ class CameraFragment : Fragment() {
             // Select lensFacing depending on the available cameras
             lensFacing = when {
                 hasBackCamera() -> CameraSelector.LENS_FACING_BACK
-                else -> throw IllegalStateException("Back and front camera are unavailable")
+                else -> throw IllegalStateException("Back camera is unavailable")
             }
 
             // Build and bind the camera use cases
@@ -378,7 +377,7 @@ class CameraFragment : Fragment() {
     }
 
     object ManagerInstance {
-        var manager: CounterDetectionManager? = null
+        var manager: TwoStageDigitsDetector? = null
 
         fun init(context: Context) {
             if (manager != null) {
@@ -392,7 +391,9 @@ class CameraFragment : Fragment() {
             val digitsModel = Asset.getFilePath(context, digitsModelWeights, true)
             val digitsDetector = DarknetDetector(digitsCfgFile, digitsModel, 320)
 
-            manager = CounterDetectionManager(screenDetector, digitsDetector, Asset.fileInDownloads(storageDir))
+            manager = TwoStageDigitsDetector(screenDetector, digitsDetector,
+                    null //Asset.fileInDownloads(storageDir)
+            )
         }
     }
 

@@ -7,12 +7,13 @@ import org.opencv.core.Point
 import org.opencv.imgproc.Imgproc
 import java.io.File
 
-class CounterDetectionManager(
+class TwoStageDigitsDetector(
         val screenDetector: DarknetDetector,
         val digitsDetector: DarknetDetector,
-        storageDirectory: File
+        storageDirectory: File?
 ) {
-    val storage = CounterDetectionStorage(storageDirectory)
+    // val storage = if (storageDirectory != null) CounterDetectionStorage(storageDirectory) else null
+    val storage = storageDirectory?.let { CounterDetectionStorage(storageDirectory) }
 
     fun process(image: ImageProxy) {
         val (rgbMat, bgrMat) = image.jpeg2RgbBgrMats()
@@ -44,8 +45,7 @@ class CounterDetectionManager(
                 digitsResult?.let { ImgDetections(screenBgrImg!!.copy(), digitsResult.detections) }
         )
 
-        // save(bgrMat, visImg, detections, Timings(detectMs = t1 - t0))
-        storage.saveResults(bgrMat, resultVisualization, counterVisualization, screenBgrImg, digitsVisualization, counterResult, digitsResult)
+        storage?.saveResults(bgrMat, resultVisualization, counterVisualization, screenBgrImg, digitsVisualization, counterResult, digitsResult)
     }
 
     private fun visualize(counter: ImgDetections, digits: ImgDetections?): Triple<Mat, Mat, Mat?> {
@@ -72,7 +72,7 @@ class CounterDetectionManager(
         return Triple(resultVisualization, counter.img, digitsVisualization)
     }
 
-    fun galleryFiles() = storage.galleryFiles()
+    fun galleryFiles() = storage?.galleryFiles() ?: listOf()
 
     private data class ImgDetections(val img: Mat, val detections: Collection<ObjectDetectionResult>)
 
