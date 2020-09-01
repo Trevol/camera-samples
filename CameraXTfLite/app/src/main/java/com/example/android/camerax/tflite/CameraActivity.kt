@@ -43,6 +43,7 @@ import com.example.android.camera.utils.YuvToRgbConverter
 import kotlinx.android.synthetic.main.activity_camera.*
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.gpu.GpuDelegate
 import org.tensorflow.lite.nnapi.NnApiDelegate
 import org.tensorflow.lite.support.common.FileUtil
 import org.tensorflow.lite.support.common.ops.NormalizeOp
@@ -51,6 +52,7 @@ import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ops.ResizeOp
 import org.tensorflow.lite.support.image.ops.ResizeWithCropOrPadOp
 import org.tensorflow.lite.support.image.ops.Rot90Op
+import java.util.*
 import java.util.concurrent.Executors
 import kotlin.math.min
 import kotlin.random.Random
@@ -88,9 +90,12 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private val tflite by lazy {
+        val addDelegate = Interpreter.Options()
+        .addDelegate(NnApiDelegate())
+        // .addDelegate(GpuDelegate())
         Interpreter(
             FileUtil.loadMappedFile(this, MODEL_PATH),
-            Interpreter.Options().addDelegate(NnApiDelegate())
+            addDelegate
         )
     }
 
@@ -168,6 +173,9 @@ class CameraActivity : AppCompatActivity() {
             var lastFpsTimestamp = System.currentTimeMillis()
             val converter = YuvToRgbConverter(this)
 
+            var totalTime = 0L
+            var totalCnt = 0
+
             imageAnalysis.setAnalyzer(executor, ImageAnalysis.Analyzer { image ->
                 if (!::bitmapBuffer.isInitialized) {
                     // The image rotation and RGB image buffer are initialized only once
@@ -198,9 +206,14 @@ class CameraActivity : AppCompatActivity() {
 
                 val tPredict = System.currentTimeMillis()
 
-                val txt = "${tPredict - tImageProcessor}   ${tPredict - t0} ${tImageProcessor - t0}"
+                totalTime += (tPredict - tImageProcessor)
+                totalCnt++
+                val avg = totalTime / totalCnt
+
+                val txt =
+                    "${tPredict - tImageProcessor}   ${tPredict - t0} ${tImageProcessor - t0} ${avg}"
                 Log.d("TTT-TTT-TTT", txt)
-                view_finder.post { text_timings.text = txt }
+                view_finder.post { text_timings.text = avg.toString() }
 
                 // Report only the top prediction
                 reportPrediction(predictions.maxBy { it.score })
