@@ -78,21 +78,21 @@ class CounterDetectionStorage(private val storageDirectory: File) {
 
     private fun saveInfo(file: File, detectionResults: List<Pair<String, DarknetDetector.DetectionResult?>>) {
         val sb = StringBuilder()
-        sb.appendln(deviceName()).appendln(androidInfo())
+        sb.appendLine(deviceName()).appendLine(androidInfo())
 
         detectionResults.forEachIndexed() { index, (name, detectionResult) ->
-            sb.appendln("Detection stage #$index: $name")
+            sb.appendLine("Detection stage #$index: $name")
             if (detectionResult == null) {
-                sb.appendln("none")
+                sb.appendLine("none")
             } else {
-                sb.append("Duration (ms): ").appendln(detectionResult.durationInMs)
+                sb.append("Duration (ms): ").appendLine(detectionResult.durationInMs)
                 detectionResult.detections.forEach {
                     sb.append("classId: ").append(it.classId)
                             .append("  classScore: ").append(it.classScore)
-                            .append("  box: ").appendln(it.box.toDisplayStr())
+                            .append("  box: ").appendLine(it.box.toDisplayStr())
                 }
             }
-            sb.appendln("-------------------------------------------")
+            sb.appendLine("-------------------------------------------")
         }
 
         FileOutputStream(file).use { fs ->
